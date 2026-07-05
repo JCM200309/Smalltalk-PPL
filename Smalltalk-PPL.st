@@ -15,6 +15,53 @@ sampleValues
  ^sampleValues ! !
 
 
+!classDefinition: #Machine category: #'Smalltalk-PPL'!
+Object subclass: #Machine
+	instanceVariableNames: 'controlStack valueStack envVar randomGenerator logW'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
+
+!Machine methodsFor: 'as yet unclassified' stamp: 'JCM 5/Jul/2026, 12:02:57 am (UTC)'!
+forkWithRng: aRandomNumberGenerator
+	
+	| rng |
+	
+	rng := randomGenerator isNil 
+			ifTrue:[^randomGenerator]
+			ifFalse:[^aRandomNumberGenerator ].
+
+	^Machine 
+		initMachineWithControlStack: controlStack 
+		withValueStack: valueStack 
+		withEnvVar:  envVar 
+		withRng:  rng
+		withLogW: logW.
+			
+	! !
+
+!Machine methodsFor: 'as yet unclassified' stamp: 'JCM 4/Jul/2026, 11:58:19 pm (UTC)'!
+initMachineWithControlStack: aControlStack withValueStack: aValueStack withEnvVar: aDictionaryOfVariables withRng: aRandomNumberGenerator withLogW: aLogW
+
+	controlStack := aControlStack asArray.
+	
+	aValueStack  isNil 
+		ifTrue: [valueStack := Array new]
+		ifFalse:[valueStack := aValueStack ].
+		
+	aDictionaryOfVariables isNil
+		ifTrue:[envVar := Dictionary new]
+		ifFalse:[envVar := aDictionaryOfVariables ].
+		
+	randomGenerator := aRandomNumberGenerator.
+	
+	logW := aLogW.
+	
+	^self
+			
+	! !
+
+
 !classDefinition: #SingleSiteMetropolisHastings category: #'Smalltalk-PPL'!
 Object subclass: #SingleSiteMetropolisHastings
 	instanceVariableNames: 'value chain currentTrace'
