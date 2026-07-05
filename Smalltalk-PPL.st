@@ -61,6 +61,54 @@ initMachineWithControlStack: aControlStack withValueStack: aValueStack withEnvVa
 			
 	! !
 
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Machine class' category: #'Smalltalk-PPL'!
+Machine class
+	instanceVariableNames: ''!
+
+!Machine class methodsFor: 'as yet unclassified' stamp: 'JCM 5/Jul/2026, 1:10:50 pm (UTC)'!
+initialMachineWithProgram: aProgram withRng: aRandomNumberGenerator
+
+	| form genV main parsedProgram |
+	genV := Dictionary new.
+	main := nil.
+	
+	"parsedProgram por ahora seria un objeto que sabe responder next y da la proxima expresion del programa parseado.
+	Lo hice asi para no meterme con logicas de listas y demas cosas"
+	parsedProgram := MiniPPL new parse: aProgram. "Devuelve una instancia de ParsedProgram"
+	form := parsedProgram next.
+	
+	[form notNil] whileTrue: [
+		(form isArray and: ( form at: 1 == 'defn') )
+			ifTrue: [
+				genV at: (form at: 2) put: (PPLClosure WithParams: (form at: 3) withBody: (form at:4) withGenV: genV)
+				]
+			ifFalse:[
+				main := form	
+				].
+			form := parsedProgram next.
+		].
+	
+	
+	^self new initMachineWithControlStack:  { { #ev. main. genV. #() } } withValueStack: nil withEnvVar: genV withRng: aRandomNumberGenerator withLogW: 0.0! !
+
+
+!classDefinition: #MiniPPL category: #'Smalltalk-PPL'!
+Object subclass: #MiniPPL
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
+
+
+!classDefinition: #PPLClosure category: #'Smalltalk-PPL'!
+Object subclass: #PPLClosure
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
+
 
 !classDefinition: #SingleSiteMetropolisHastings category: #'Smalltalk-PPL'!
 Object subclass: #SingleSiteMetropolisHastings
@@ -127,8 +175,14 @@ program: aProgram rng:aRandomNumberGenerator steps: aNumberOfSteps warmup: aNumb
 
 ! !
 
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'JCM 4/Jul/2026, 11:35:06 pm (UTC)'!
-run: aProgram withRng: aRandomNumberGenerator resamplingSite: a0 withCache: aCollectionOfSampledValues.
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'JCM 5/Jul/2026, 12:31:44 pm (UTC)'!
+run: aProgram withRng: aRandomNumberGenerator resamplingSite: a0 withCache: aCollectionOfSampledValues
+
+
+	| machine |
+
+
+	machine := Machine initialMachineWithProgram: aProgram withRng: aRandomNumberGenerator.
 	
 
 
