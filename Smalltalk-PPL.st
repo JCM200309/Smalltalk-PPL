@@ -89,6 +89,51 @@ runWithProgram: aProgram withRng: aRandomNumberGenerator
 	^self new runWithProgram: aProgram withRng: aRandomNumberGenerator! !
 
 
+!classDefinition: #SMCRunner category: #'Smalltalk-PPL'!
+AlgorithmRunner subclass: #SMCRunner
+	instanceVariableNames: 'particles'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
+
+!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 10:07:02 pm (UTC)'!
+advance: aParticle
+
+	
+	| runValue |
+	
+	[runValue isNil] whileTrue:[
+		runValue := aParticle resumeRunner: self.
+		].
+	"Termina cuando recibe algo distinto que sample"
+	^runValue
+	
+
+	! !
+
+!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 10:03:07 pm (UTC)'!
+runWithProgram: aProgram withRng: aRandomNumberGenerator  withParticles: aCollectionOfParticles
+
+	| messages |
+	
+	messages := OrderedCollection new.
+	
+	aCollectionOfParticles do:[:particle | self advance: particle ]
+
+	
+
+	! !
+
+
+!SMCRunner methodsFor: 'Special Instructions' stamp: 'jcm 6/Jul/2026, 10:03:20 pm (UTC)'!
+sampleWithAddress: anAddress withDistribution: aDistribution
+
+	
+	machine send: (aDistribution sampleWith: randomNumberGenerator).
+	
+	^nil! !
+
+
 !classDefinition: #SSMHRunner category: #'Smalltalk-PPL'!
 AlgorithmRunner subclass: #SSMHRunner
 	instanceVariableNames: 'redrawAddress cache trace'
@@ -515,6 +560,28 @@ program: aProgram rng:aRandomNumberGenerator for: aNumberOfSteps
 	^self new program: aProgram rng:aRandomNumberGenerator for: aNumberOfSteps
 	
 	! !
+
+
+!classDefinition: #SequentialMonteCarlo category: #'Smalltalk-PPL'!
+PPLAlgorithm subclass: #SequentialMonteCarlo
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
+
+!SequentialMonteCarlo methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 9:49:55 pm (UTC)'!
+program: aProgram rng:aRandomNumberGenerator for: aNumberOfSteps
+
+	
+	| particles |
+	runner := SMCRunner.
+	particles := OrderedCollection new.
+	
+	1 to: aNumberOfSteps do:[
+		particles add: (Machine initialMachineWithProgram: aProgram withRng: aRandomNumberGenerator )
+		].
+	
+	^runner runWithProgram: aProgram withRng: aRandomNumberGenerator  withParticles: particles.! !
 
 
 !classDefinition: #SingleSiteMetropolisHastings category: #'Smalltalk-PPL'!
