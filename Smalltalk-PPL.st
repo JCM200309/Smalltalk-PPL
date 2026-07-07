@@ -96,34 +96,110 @@ AlgorithmRunner subclass: #SMCRunner
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 10:07:02 pm (UTC)'!
+!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 9:51:21 pm (UTC)'!
 advance: aParticle
 
 	
-	| runValue |
+	machine := aParticle.
 	
-	[runValue isNil] whileTrue:[
-		runValue := aParticle resumeRunner: self.
-		].
-	"Termina cuando recibe algo distinto que sample"
-	^runValue
+	^aParticle resumeRunner: self
 	
 
 	! !
 
-!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 10:03:07 pm (UTC)'!
-runWithProgram: aProgram withRng: aRandomNumberGenerator  withParticles: aCollectionOfParticles
+!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 10:03:15 pm (UTC)'!
+resampleFromObserveMessages: aCollectionOfObservedMessages
+
+	| logWeights probabilities ancestors newParticles |
+
+
+	logWeights := aCollectionOfObservedMessages collect: [:msg | msg logIncrement].
+	
+	probabilities := logWeights softMax.
+	
+	"TODO: Equivalente a la linea rng.choice(N, size=N, p=probabilities) todavia no fue implementado"
+	
+	ancestors := self sampleAncestors: aCollectionOfObservedMessages size withProbabilities: probabilities.
+	
+	newParticles := OrderedCollection new.
+	
+	"Selecciona las particulas nuevas para resamplear"
+	1 to: aCollectionOfObservedMessages size do: [:newIndex |
+		
+		| oldIndex oldParticle newParticle |
+		
+		oldIndex := ancestors at: newIndex.
+		
+		oldParticle := (aCollectionOfObservedMessages at: oldIndex) particle.
+		
+		newParticle := oldParticle forkWithRng: randomNumberGenerator.
+		
+		newParticles add: newParticle
+	].
+
+	^ newParticles
+		
+	
+	
+	
+
+
+	
+
+	! !
+
+!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 10:07:00 pm (UTC)'!
+run
 
 	| messages |
 	
-	messages := OrderedCollection new.
-	
-	aCollectionOfParticles do:[:particle | self advance: particle ]
+	true whileTrue:[
+		messages := particles collect: [:particle | self advance: particle].
+		
+		"Chequea si todas son Done"
+		(messages allSatisfy: [:msg | msg isDone]) ifTrue:[
+			^SMCRun withValues: (messages collect: [:msg | msg value])
+			].
+		
+		"Chequea si todas son Observe"
+		(messages allSatisfy: [:msg | msg isObserve]) ifFalse: [
+			self error: 'SMC needs all particles to reach observe together'
+		].
+		
+		
+		particles := self resampleFromObserveMessages: messages.
+		
+		]
 
 	
 
 	! !
 
+!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 9:03:07 pm (UTC)'!
+runWithProgram: aProgram withRng: aRandomNumberGenerator  withParticles: aCollectionOfParticles
+
+	particles := aCollectionOfParticles.
+	randomNumberGenerator  := aRandomNumberGenerator .
+	program  := aProgram.
+	
+	^self run
+
+	
+
+	! !
+
+
+!SMCRunner methodsFor: 'Special Instructions' stamp: 'jcm 7/Jul/2026, 9:36:04 pm (UTC)'!
+observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
+
+	| logIncrement |
+	logIncrement := aDistribution log_prob: anObservedValue.
+	
+	"Machine es la particula actual sobre la cual se esta avanzando, se define en el metodo advance"
+	machine incrementLogW: logIncrement.
+	machine send: anObservedValue.
+	
+	^SMCObserve withAddress: anAddress forParticle: machine withLogIncrement: logIncrement! !
 
 !SMCRunner methodsFor: 'Special Instructions' stamp: 'jcm 6/Jul/2026, 10:03:20 pm (UTC)'!
 sampleWithAddress: anAddress withDistribution: aDistribution
@@ -238,6 +314,32 @@ LWRun class
 withLogW: aLogWValue  withValue: aReturnValue
 
 	^self new withLogW: aLogWValue withValue: aReturnValue ! !
+
+
+!classDefinition: #SMCRun category: #'Smalltalk-PPL'!
+AlgorithmRuns subclass: #SMCRun
+	instanceVariableNames: 'values'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
+
+!SMCRun methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 10:07:45 pm (UTC)'!
+withValues: aCollectionOfValues
+
+	values := aCollectionOfValues.
+	
+	^self! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'SMCRun class' category: #'Smalltalk-PPL'!
+SMCRun class
+	instanceVariableNames: ''!
+
+!SMCRun class methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 10:07:24 pm (UTC)'!
+withValues: aCollectionOfValues
+
+	^self new withValues: aCollectionOfValues! !
 
 
 !classDefinition: #SSMHRun category: #'Smalltalk-PPL'!
@@ -389,19 +491,34 @@ pushValue: anObject
 	valueStack addLast: anObject.
 	^ self! !
 
-!Machine methodsFor: 'runner' stamp: 'L.C 6/Jul/2026, 12:43:51 am (UTC)'!
+!Machine methodsFor: 'runner' stamp: 'jcm 7/Jul/2026, 9:22:20 pm (UTC)'!
 resumeRunner: aRunner
 
-	[controlStack notEmpty] whileTrue: [self stepRunner: aRunner].
+	| result |
+	"En el caso de que aRunner sea SMC:
+	Si es observe devuelve SMCObserve
+	Si es done devuelve SMCDone"
+	[controlStack notEmpty] whileTrue: [
+			result := self stepRunner: aRunner.
+			result notNil ifTrue: [
+				^ result
+			].
+	].
 	
 	^ aRunner doneWithValue: valueStack last! !
 
-!Machine methodsFor: 'runner' stamp: 'L.C 6/Jul/2026, 1:48:49 pm (UTC)'!
+!Machine methodsFor: 'runner' stamp: 'jcm 7/Jul/2026, 9:22:01 pm (UTC)'!
 stepRunner: aRunner
 
-	| instruction |
+	| instruction result |
 	instruction := controlStack removeLast.
-	instruction executeOn: self runner: aRunner.
+	result := instruction executeOn: self runner: aRunner.
+	
+	"Solo cuando el runner es SMC va a devolver un SMCMessage"
+	"TODO: Se podria quitar el isKindOf"
+	(result isKindOf: SMCMessage) ifTrue: [
+		^ result
+	].
 	
 	^ self.
 	
@@ -729,6 +846,94 @@ Object subclass: #PPLClosure
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
+
+
+!classDefinition: #SMCMessage category: #'Smalltalk-PPL'!
+Object subclass: #SMCMessage
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
+
+!SMCMessage methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 9:22:46 pm (UTC)'!
+isDone
+
+	^false! !
+
+!SMCMessage methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 9:22:39 pm (UTC)'!
+isObserve
+
+	^false! !
+
+
+!classDefinition: #SMCDone category: #'Smalltalk-PPL'!
+SMCMessage subclass: #SMCDone
+	instanceVariableNames: 'address particle logIncrement value'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
+
+!SMCDone methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 10:14:57 pm (UTC)'!
+doneWithValue: aReturnValue
+
+	value := aReturnValue.
+	
+	^self! !
+
+!SMCDone methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 10:16:11 pm (UTC)'!
+isDone
+
+	^true! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'SMCDone class' category: #'Smalltalk-PPL'!
+SMCDone class
+	instanceVariableNames: ''!
+
+!SMCDone class methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 10:15:31 pm (UTC)'!
+doneWithValue: aReturnValue
+
+	^self new doneWithValue: aReturnValue! !
+
+
+!classDefinition: #SMCObserve category: #'Smalltalk-PPL'!
+SMCMessage subclass: #SMCObserve
+	instanceVariableNames: 'address particle logIncrement'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
+
+!SMCObserve methodsFor: 'Getters' stamp: 'jcm 7/Jul/2026, 10:03:46 pm (UTC)'!
+particle
+
+	^particle! !
+
+
+!SMCObserve methodsFor: 'Instance Creation' stamp: 'jcm 7/Jul/2026, 10:16:23 pm (UTC)'!
+isObserve
+
+	^true! !
+
+!SMCObserve methodsFor: 'Instance Creation' stamp: 'jcm 7/Jul/2026, 9:45:23 pm (UTC)'!
+withAddress: anAddress forParticle: aParticle withLogIncrement: aLogValue
+
+	address  := anAddress .
+	particle := aParticle .
+	logIncrement := aLogValue .
+	
+	^self! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'SMCObserve class' category: #'Smalltalk-PPL'!
+SMCObserve class
+	instanceVariableNames: ''!
+
+!SMCObserve class methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 9:44:35 pm (UTC)'!
+withAddress: anAddress forParticle: aParticle withLogIncrement: aLogValue
+
+	^self new withAddress: anAddress forParticle: aParticle withLogIncrement: aLogValue! !
 !classDefinition: #MachineTest category: #'Smalltalk-PPL-Tests'!
 TestCase subclass: #MachineTest
 	instanceVariableNames: 'runner machine'
