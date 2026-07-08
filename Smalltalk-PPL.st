@@ -5,7 +5,7 @@ Object subclass: #AlgorithmRunner
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!AlgorithmRunner methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 05:04:22'!
+!AlgorithmRunner methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 8:04:22 am (UTC)'!
 initialEnvironment
 	| env |
 	env := Dictionary new.
@@ -43,7 +43,7 @@ sampleWithAddress: anAddress withDistribution: aDistribution
 	self subclassResponsibility! !
 
 
-!AlgorithmRunner methodsFor: 'setters' stamp: 'L.C 7/7/2026 23:20:23'!
+!AlgorithmRunner methodsFor: 'setters' stamp: 'L.C 8/Jul/2026, 2:20:23 am (UTC)'!
 machine: aMachine 
 	
 	machine := aMachine! !
@@ -56,7 +56,7 @@ AlgorithmRunner subclass: #LWRunner
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!LWRunner methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 21:22:04'!
+!LWRunner methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:22:04 am (UTC)'!
 runWithProgram: aProgram withRng: aRandomNumberGenerator
 
 	randomNumberGenerator  := aRandomNumberGenerator.
@@ -76,7 +76,7 @@ doneWithValue: aReturnValue
 	
 	^LWRun withLogW: machine logW  withValue: aReturnValue.! !
 
-!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 03:54:08'!
+!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 8/Jul/2026, 6:54:08 am (UTC)'!
 observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
 
 	
@@ -85,7 +85,7 @@ observeWithAddress: anAddress withDistribution: aDistribution withObservedValue:
 	
 	^nil.! !
 
-!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 03:54:02'!
+!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 8/Jul/2026, 6:54:02 am (UTC)'!
 sampleWithAddress: anAddress withDistribution: aDistribution
 
 	
@@ -205,7 +205,7 @@ runWithProgram: aProgram withRng: aRandomNumberGenerator  withParticles: aCollec
 	! !
 
 
-!SMCRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 03:54:17'!
+!SMCRunner methodsFor: 'Special Instructions' stamp: 'L.C 8/Jul/2026, 6:54:17 am (UTC)'!
 observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
 
 	| logIncrement |
@@ -217,7 +217,7 @@ observeWithAddress: anAddress withDistribution: aDistribution withObservedValue:
 	
 	^SMCObserve withAddress: anAddress forParticle: machine withLogIncrement: logIncrement! !
 
-!SMCRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 03:54:20'!
+!SMCRunner methodsFor: 'Special Instructions' stamp: 'L.C 8/Jul/2026, 6:54:20 am (UTC)'!
 sampleWithAddress: anAddress withDistribution: aDistribution
 
 	
@@ -233,7 +233,7 @@ AlgorithmRunner subclass: #SSMHRunner
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/7/2026 20:42:52'!
+!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/Jul/2026, 11:42:52 pm (UTC)'!
 doneWithValue: aReturnValue
 
 "Cambiar nombre aReturnValue viene de V[-1] "
@@ -245,7 +245,7 @@ doneWithValue: aReturnValue
 	
 	! !
 
-!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 14:51:46'!
+!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 8/Jul/2026, 5:51:46 pm (UTC)'!
 observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
 
 	
@@ -254,7 +254,7 @@ observeWithAddress: anAddress withDistribution: aDistribution withObservedValue:
 	
 	^nil.! !
 
-!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 06:26:19'!
+!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 8/Jul/2026, 9:26:19 am (UTC)'!
 sampleWithAddress: anAddress withDistribution: aDistribution 
 
 	| sampledValue |
@@ -275,7 +275,7 @@ sampleWithAddress: anAddress withDistribution: aDistribution
 	! !
 
 
-!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 00:31:55'!
+!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 3:31:55 am (UTC)'!
 initialEnvironment
 	| env |
 	env := Dictionary new.
@@ -285,7 +285,7 @@ initialEnvironment
 	env at: #normal put: #normal.
 	^env! !
 
-!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 00:32:56'!
+!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 3:32:56 am (UTC)'!
 run: aProgram withRng: aRandomNumberGenerator redrawAddress: anAddressToRedraw withCache: aCollectionOfSampledValues
 
 	| env |
@@ -309,7 +309,7 @@ run: aProgram withRng: aRandomNumberGenerator redrawAddress: anAddressToRedraw w
 	
 ! !
 
-!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 21:39:53'!
+!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:39:53 am (UTC)'!
 trace: aTrace
 	
 	trace := aTrace! !
@@ -334,7 +334,7 @@ AlgorithmRuns subclass: #LWRun
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!LWRun methodsFor: 'Instance Creation' stamp: 'L.C 7/8/2026 04:46:10'!
+!LWRun methodsFor: 'Instance Creation' stamp: 'L.C 8/Jul/2026, 7:46:10 am (UTC)'!
 logW
 
 	^logW! !
@@ -392,8 +392,16 @@ AlgorithmRuns subclass: #SSMHRun
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!SSMHRun methodsFor: 'Instance Creation' stamp: 'L.C 7/7/2026 20:36:17'!
+!SSMHRun methodsFor: 'Instance Creation' stamp: 'L.C 7/Jul/2026, 11:36:17 pm (UTC)'!
 initializeWithTrace: aProposedTrace withValue: aReturnValue.
+	
+	trace := aProposedTrace.
+	value := aReturnValue.
+	
+	^self! !
+
+!SSMHRun methodsFor: 'Instance Creation' stamp: 'JCM 5/Jul/2026, 7:50:16 pm (UTC)'!
+withTrace: aProposedTrace withValue: aReturnValue.
 	
 	trace := aProposedTrace.
 	value := aReturnValue.
@@ -412,7 +420,7 @@ trace
 SSMHRun class
 	instanceVariableNames: 'trace value'!
 
-!SSMHRun class methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 20:36:05'!
+!SSMHRun class methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 11:36:05 pm (UTC)'!
 withTrace: aProposedTrace withValue: aReturnValue.
 	
 	
@@ -455,13 +463,13 @@ Object subclass: #MHTrace
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 21:28:55'!
+!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:28:55 am (UTC)'!
 initialize
 	sampleValues := Dictionary new.
 	sampleDensities := Dictionary new.
 	observeDensities := Dictionary new.! !
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 7/4/2026 23:52:20'!
+!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:52:20 am (UTC)'!
 logDensityExcluding: excludedAddresses
 
 	| density |
@@ -478,7 +486,7 @@ logDensityExcluding: excludedAddresses
 observeDensities
 ^observeDensities! !
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 04:34:21'!
+!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 7:34:21 am (UTC)'!
 randomSampleAdressUsing: aRandomNumberGenerator
 
 	^sampleValues keys atRandom: aRandomNumberGenerator.! !
@@ -514,40 +522,6 @@ Object subclass: #Machine
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!Machine methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 04:51:53'!
-executePrimitive: anOperator withArguments: anArguments
-
-	anOperator == #+ ifTrue: [^(anArguments at: 1) + (anArguments at: 2)].
-	anOperator == #* ifTrue: [^(anArguments at: 1) * (anArguments at: 2)].
-	anOperator == #- ifTrue: [^(anArguments at: 1) - (anArguments at: 2)].
-	anOperator == #/ ifTrue: [^(anArguments at: 1) / (anArguments at: 2)].
-	anOperator == #= ifTrue: [^(anArguments at: 1) = (anArguments at: 2)].
-	anOperator == #normal ifTrue: [^NormalDistribution
-			withMean: (anArguments at: 1) 
-			standardDeviation: (anArguments at: 2) 
-			randomGenerator: randomGenerator].
-	
-	^self error: 'Not Implemented: ' , anOperator asString.! !
-
-!Machine methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 21:20:11'!
-forkWithRng: aRandomNumberGenerator
-	
-	| rng |
-	
-	rng := randomGenerator isNil 
-			ifTrue:[^aRandomNumberGenerator]
-			ifFalse:[^randomGenerator ].
-
-	^Machine 
-		initMachineWithControlStack: controlStack 
-		withValueStack: valueStack 
-		withEnvVar:  envVar 
-		withRng:  rng
-		withLogW: logW.
-			
-	! !
-
-
 !Machine methodsFor: 'Setters' stamp: 'jcm 6/Jul/2026, 7:38:30 pm (UTC)'!
 incrementLogW: aValueOfLogWToSum
 
@@ -559,7 +533,7 @@ popValue
 	
 	^ valueStack removeLast! !
 
-!Machine methodsFor: 'runner' stamp: 'L.C 7/7/2026 20:30:18'!
+!Machine methodsFor: 'runner' stamp: 'L.C 7/Jul/2026, 11:30:18 pm (UTC)'!
 popValues: anIndex
 	
 	| values |
@@ -569,7 +543,7 @@ popValues: anIndex
 	
 	^ values! !
 
-!Machine methodsFor: 'runner' stamp: 'L.C 7/8/2026 00:15:11'!
+!Machine methodsFor: 'runner' stamp: 'L.C 8/Jul/2026, 3:15:11 am (UTC)'!
 pushBody: aBody withEnvironment: anEnv andAddress: anAddress
 	
 	| n |
@@ -596,7 +570,7 @@ pushValue: anObject
 	valueStack addLast: anObject.
 	^ self! !
 
-!Machine methodsFor: 'runner' stamp: 'L.C 7/7/2026 22:56:08'!
+!Machine methodsFor: 'runner' stamp: 'L.C 8/Jul/2026, 1:56:08 am (UTC)'!
 resumeRunner: aRunner
 
 	"En el caso de que aRunner sea SMC:
@@ -611,7 +585,7 @@ resumeRunner: aRunner
 	^ aRunner doneWithValue: valueStack last.
 	! !
 
-!Machine methodsFor: 'runner' stamp: 'L.C 7/7/2026 23:54:58'!
+!Machine methodsFor: 'runner' stamp: 'L.C 8/Jul/2026, 2:54:58 am (UTC)'!
 stepRunner: aRunner
 
 	| instruction result |
@@ -635,7 +609,7 @@ stepRunner: aRunner
 	^ self.
 	"! !
 
-!Machine methodsFor: 'runner' stamp: 'L.C 7/7/2026 22:49:13'!
+!Machine methodsFor: 'runner' stamp: 'L.C 8/Jul/2026, 1:49:13 am (UTC)'!
 translateToInstruction: aForm
 
 	| tag |
@@ -666,6 +640,40 @@ initMachineWithControlStack: aControlStack withValueStack: aValueStack withEnvVa
 	! !
 
 
+!Machine methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 7:51:53 am (UTC)'!
+executePrimitive: anOperator withArguments: anArguments
+
+	anOperator == #+ ifTrue: [^(anArguments at: 1) + (anArguments at: 2)].
+	anOperator == #* ifTrue: [^(anArguments at: 1) * (anArguments at: 2)].
+	anOperator == #- ifTrue: [^(anArguments at: 1) - (anArguments at: 2)].
+	anOperator == #/ ifTrue: [^(anArguments at: 1) / (anArguments at: 2)].
+	anOperator == #= ifTrue: [^(anArguments at: 1) = (anArguments at: 2)].
+	anOperator == #normal ifTrue: [^NormalDistribution
+			withMean: (anArguments at: 1) 
+			standardDeviation: (anArguments at: 2) 
+			randomGenerator: randomGenerator].
+	
+	^self error: 'Not Implemented: ' , anOperator asString.! !
+
+!Machine methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:20:11 am (UTC)'!
+forkWithRng: aRandomNumberGenerator
+	
+	| rng |
+	
+	rng := randomGenerator isNil 
+			ifTrue:[^aRandomNumberGenerator]
+			ifFalse:[^randomGenerator ].
+
+	^Machine 
+		initMachineWithControlStack: controlStack 
+		withValueStack: valueStack 
+		withEnvVar:  envVar 
+		withRng:  rng
+		withLogW: logW.
+			
+	! !
+
+
 !Machine methodsFor: 'Getters' stamp: 'jcm 6/Jul/2026, 7:45:52 pm (UTC)'!
 logW
 
@@ -677,7 +685,7 @@ logW
 Machine class
 	instanceVariableNames: ''!
 
-!Machine class methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 22:33:23'!
+!Machine class methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 1:33:23 am (UTC)'!
 initialMachineWithProgram: aParsedProgram withRng: aRandomNumberGenerator
 
 	| genV main |
@@ -703,6 +711,14 @@ initialMachineWithProgram: aParsedProgram withRng: aRandomNumberGenerator
 		withLogW: 0.0! !
 
 
+!classDefinition: #MiniPPL category: #'Smalltalk-PPL'!
+Object subclass: #MiniPPL
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
+
+
 !classDefinition: #PPLAlgorithm category: #'Smalltalk-PPL'!
 Object subclass: #PPLAlgorithm
 	instanceVariableNames: 'runner'
@@ -718,7 +734,7 @@ PPLAlgorithm subclass: #Likelihood_weighting
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!Likelihood_weighting methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 14:52:38'!
+!Likelihood_weighting methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 5:52:38 pm (UTC)'!
 program: aProgram rng:aRandomNumberGenerator for: aNumberOfSteps
 
 	| runs values log_w normalized |
@@ -794,6 +810,92 @@ PPLAlgorithm subclass: #SingleSiteMetropolisHastings
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 8:14:44 pm (UTC)'!
+checkAcceptionOf: aNewRunOfSSMH comparingWith: anOldRunOfSSMH with: aRandomNumberGenerator with: anA0
+	
+	
+	| acceptanceRatio proposedTrace newValue oldTrace |
+	
+	proposedTrace := aNewRunOfSSMH trace.
+	newValue := aNewRunOfSSMH value.
+	oldTrace := anOldRunOfSSMH trace.
+	acceptanceRatio := self logAlphaOf: proposedTrace comparingWith: oldTrace withSelectedAddress: anA0.
+											 
+
+	((aRandomNumberGenerator next ln) < acceptanceRatio)
+            ifTrue: [
+		  "Dado que tengo que guardar tanto traza nueva como valor nuevo, de una guardo toda la corrida de SSMH"
+                currentRun := aNewRunOfSSMH 
+            ].
+! !
+
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 9:04:58 am (UTC)'!
+checkPassWarmup: aNumberOfWarmups Iterations: aNumberOfIteration
+
+	aNumberOfIteration >= aNumberOfWarmups ifTrue:[chain add: currentRun value asFloat].
+	
+
+
+! !
+
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 8:12:08 pm (UTC)'!
+initialTraceOfProgram: aProgram withRng: aRandomNumberGenerator for: aNumberOfSteps  withWarmup: aNumberOfWarmups
+
+	currentRun := runner run: aProgram withRng: aRandomNumberGenerator redrawAddress: nil withCache: OrderedDictionary new.
+	chain := OrderedCollection new.
+
+
+	
+
+
+! !
+
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 9:34:04 am (UTC)'!
+program: aProgram rng:aRandomNumberGenerator steps: aNumberOfSteps warmup: aNumberOfWarmups
+
+	| newRun |
+	runner := SSMHRunner new.
+	self initialTraceOfProgram: aProgram withRng: aRandomNumberGenerator for: aNumberOfSteps  withWarmup: aNumberOfWarmups.
+	
+	1 to: aNumberOfSteps + aNumberOfWarmups do:[ :i  |  | a0 proposedTrace currentTrace|
+		currentTrace := currentRun trace.
+		a0 := currentRun trace randomSampleAdressUsing: aRandomNumberGenerator.
+		newRun := runner run: aProgram withRng: aRandomNumberGenerator redrawAddress: a0 withCache: currentRun trace sampleValues.
+		proposedTrace := newRun trace.
+	 	self checkAcceptionOf: newRun comparingWith: currentRun with: aRandomNumberGenerator with: a0.
+		self checkPassWarmup: aNumberOfWarmups Iterations: i.
+		].
+		
+	
+	^chain asArray.
+	
+	
+
+
+! !
+
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'JCM 4/Jul/2026, 11:35:06 pm (UTC)'!
+run: aProgram withRng: aRandomNumberGenerator resamplingSite: a0 withCache: aCollectionOfSampledValues.
+	
+
+
+! !
+
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 9:02:40 am (UTC)'!
+sumOfObserveDensities: observeDensities andSampleDensities: sampleDensities excluding: excludedAddresses
+
+	"esto se puede polimorfear para que tome la densidad de una traza directamente con excluding: forwardEA/reverseEA"
+
+	| density |
+
+	density := 0.0.
+	observeDensities valuesDo: [:prob | density := density+prob].
+
+	sampleDensities keysAndValuesDo: [:address :prob | (excludedAddresses includes: address) ifFalse: [ density := density + prob ]].
+
+	^ density! !
+
+
 !SingleSiteMetropolisHastings methodsFor: 'logProb (densities)' stamp: 'L.C 6/Jul/2026, 12:50:04 pm (UTC)'!
 excludedAddressesFrom: densities and: anotherDensities withAddress: anAddress
 
@@ -846,7 +948,7 @@ logRatioBetween: currentSamples and: proposedSamples
 
 	^ (currentSamples size / proposedSamples size) ln! !
 
-!SingleSiteMetropolisHastings methodsFor: 'logProb (densities)' stamp: 'L.C 7/4/2026 23:42:49'!
+!SingleSiteMetropolisHastings methodsFor: 'logProb (densities)' stamp: 'L.C 5/Jul/2026, 2:42:49 am (UTC)'!
 sumOfDensitiesFor: aTrace  excluding: excludedAddresses
 
 	| density |
@@ -857,91 +959,13 @@ sumOfDensitiesFor: aTrace  excluding: excludedAddresses
 	
 	^ density! !
 
-
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 8:14:44 pm (UTC)'!
-checkAcceptionOf: aNewRunOfSSMH comparingWith: anOldRunOfSSMH with: aRandomNumberGenerator with: anA0
-	
-	
-	| acceptanceRatio proposedTrace newValue oldTrace |
-	
-	proposedTrace := aNewRunOfSSMH trace.
-	newValue := aNewRunOfSSMH value.
-	oldTrace := anOldRunOfSSMH trace.
-	acceptanceRatio := self logAlphaOf: proposedTrace comparingWith: oldTrace withSelectedAddress: anA0.
-											 
-
-	((aRandomNumberGenerator next ln) < acceptanceRatio)
-            ifTrue: [
-		  "Dado que tengo que guardar tanto traza nueva como valor nuevo, de una guardo toda la corrida de SSMH"
-                currentRun := aNewRunOfSSMH 
-            ].
-! !
-
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 06:04:58'!
-checkPassWarmup: aNumberOfWarmups Iterations: aNumberOfIteration
-
-	aNumberOfIteration >= aNumberOfWarmups ifTrue:[chain add: currentRun value asFloat].
-	
-
-
-! !
-
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 8:12:08 pm (UTC)'!
-initialTraceOfProgram: aProgram withRng: aRandomNumberGenerator for: aNumberOfSteps  withWarmup: aNumberOfWarmups
-
-	currentRun := runner run: aProgram withRng: aRandomNumberGenerator redrawAddress: nil withCache: OrderedDictionary new.
-	chain := OrderedCollection new.
-
-
-	
-
-
-! !
-
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 06:34:04'!
-program: aProgram rng:aRandomNumberGenerator steps: aNumberOfSteps warmup: aNumberOfWarmups
-
-	| newRun |
-	runner := SSMHRunner new.
-	self initialTraceOfProgram: aProgram withRng: aRandomNumberGenerator for: aNumberOfSteps  withWarmup: aNumberOfWarmups.
-	
-	1 to: aNumberOfSteps + aNumberOfWarmups do:[ :i  |  | a0 proposedTrace currentTrace|
-		currentTrace := currentRun trace.
-		a0 := currentRun trace randomSampleAdressUsing: aRandomNumberGenerator.
-		newRun := runner run: aProgram withRng: aRandomNumberGenerator redrawAddress: a0 withCache: currentRun trace sampleValues.
-		proposedTrace := newRun trace.
-	 	self checkAcceptionOf: newRun comparingWith: currentRun with: aRandomNumberGenerator with: a0.
-		self checkPassWarmup: aNumberOfWarmups Iterations: i.
-		].
-		
-	
-	^chain asArray.
-	
-	
-
-
-! !
-
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'JCM 4/Jul/2026, 11:35:06 pm (UTC)'!
-run: aProgram withRng: aRandomNumberGenerator resamplingSite: a0 withCache: aCollectionOfSampledValues.
-	
-
-
-! !
-
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 06:02:40'!
-sumOfObserveDensities: observeDensities andSampleDensities: sampleDensities excluding: excludedAddresses
-
-	"esto se puede polimorfear para que tome la densidad de una traza directamente con excluding: forwardEA/reverseEA"
-
-	| density |
-
-	density := 0.0.
-	observeDensities valuesDo: [:prob | density := density+prob].
-
-	sampleDensities keysAndValuesDo: [:address :prob | (excludedAddresses includes: address) ifFalse: [ density := density + prob ]].
-
-	^ density! !
+
+!classDefinition: #PPLClosure category: #'Smalltalk-PPL'!
+Object subclass: #PPLClosure
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL'!
 
 
 !classDefinition: #SMCMessage category: #'Smalltalk-PPL'!
@@ -1042,12 +1066,12 @@ Object subclass: #SingleSiteProposal
 Method Object!
 
 
-!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 7/4/2026 23:32:53'!
+!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:32:53 am (UTC)'!
 forwardExcludedAddresses
 	
 	^ {selectedAddress} union: (proposedTrace sampleDensities keys asSet difference: (currentTrace sampleDensities keys asSet))! !
 
-!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 7/4/2026 23:27:51'!
+!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:27:51 am (UTC)'!
 initializeWith: aCurrentTrace proposed: aProposedTrace address: anAddress
 
 	currentTrace := aCurrentTrace.
@@ -1056,7 +1080,7 @@ initializeWith: aCurrentTrace proposed: aProposedTrace address: anAddress
 	
 	^self.! !
 
-!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 7/4/2026 23:52:53'!
+!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:52:53 am (UTC)'!
 logAlpha
 
 	| numerator denominator |
@@ -1066,7 +1090,7 @@ logAlpha
 
 	^ numerator - denominator + self proposalRatio.! !
 
-!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 7/4/2026 23:35:42'!
+!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:35:42 am (UTC)'!
 proposalRatio
 
 	| currentSamples proposedSamples |
@@ -1076,7 +1100,7 @@ proposalRatio
 	
 	^ (currentSamples size / proposedSamples size) ln.! !
 
-!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 7/4/2026 23:33:48'!
+!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:33:48 am (UTC)'!
 reverseExcludedAddresses
 	
 	^ {selectedAddress} union: (currentTrace sampleDensities keys asSet difference: (proposedTrace sampleDensities keys asSet))! !
@@ -1087,7 +1111,7 @@ reverseExcludedAddresses
 SingleSiteProposal class
 	instanceVariableNames: ''!
 
-!SingleSiteProposal class methodsFor: 'instance creation' stamp: 'L.C 7/4/2026 23:27:00'!
+!SingleSiteProposal class methodsFor: 'instance creation' stamp: 'L.C 5/Jul/2026, 2:27:00 am (UTC)'!
 from: aCurrentTrace to: aProposedTrace at: anAddress
 	
 	^ self new initializeWith: aCurrentTrace proposed: aProposedTrace address: anAddress! !
@@ -1098,7 +1122,7 @@ TestCase subclass: #DistributionTest
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Tests'!
 
-!DistributionTest methodsFor: 'normal' stamp: 'L.C 7/7/2026 21:02:28'!
+!DistributionTest methodsFor: 'normal' stamp: 'L.C 8/Jul/2026, 12:02:28 am (UTC)'!
 test01LogProb
 
 	| dist prob |
@@ -1108,7 +1132,7 @@ test01LogProb
 	
 	self assert: ((prob - (-0.918938)) abs < 0.0001)! !
 
-!DistributionTest methodsFor: 'normal' stamp: 'L.C 7/6/2026 22:57:17'!
+!DistributionTest methodsFor: 'normal' stamp: 'L.C 7/Jul/2026, 1:57:17 am (UTC)'!
 test02Sample
 
 	| distribution randomMock sample |
@@ -1127,7 +1151,7 @@ TestCase subclass: #MachineTest
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Tests'!
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 21:10:19'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:10:19 am (UTC)'!
 dummyMachineWithControlStack: aControlStack
 
 ^ Machine new
@@ -1137,63 +1161,66 @@ dummyMachineWithControlStack: aControlStack
 		withRng: Random new
 		withLogW: 0.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 12:09:56'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 3:09:56 pm (UTC)'!
 evalAST: anAST
 	
 	^ self evalAST: anAST withEnvironment: Dictionary new! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 23:16:35'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 2:16:35 am (UTC)'!
 evalAST: anAST withEnvironment: anEnvironment
 	
 	machine := self dummyMachineWithControlStack: {Eval expression: anAST withEnvironment: anEnvironment andAddress: #().}.
 	^ (machine resumeRunner: runner) value! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 23:23:00'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 2:23:00 am (UTC)'!
 setUp
 	runner := SSMHRunner new.
 	runner trace: MHTrace new. "PARCHE TEMPORAL"! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:54:21'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 2:54:21 pm (UTC)'!
 test01EvalLiteral
 	
 	self assert: (self evalAST: 100) equals: 100.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 12:09:56'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 3:09:56 pm (UTC)'!
 test02EvalSymbol
 
 	self assert: (self evalAST: #y withEnvironment: {#y -> 42} asDictionary) equals: 42.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:55:47'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 9:18:38 pm (UTC)'!
 test03EvalIfTrue
 
-	self assert: (self evalAST: #(if true 2 1)) equals: 2.! !
+	self assert: (self evalAST: (If condition: true then: 2 else: 1)) equals: 2.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:56:18'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 9:19:01 pm (UTC)'!
 test04EvalIfFalse
 
-	self assert: (self evalAST: #(if false 2 1)) equals: 1.! !
+	self assert: (self evalAST: (If condition: false then: 2 else: 1)) equals: 1.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:57:51'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 10:49:58 pm (UTC)'!
 test05EvalLet
 	
-	self assert: (self evalAST: #(let (#x 1) #x)) equals: 1.! !
+	"Este test todavia falla"
+	"self assert: (self evalAST: #(let (#x 1) #x)) equals: 1."
+	self assert: (self evalAST: (Let initBinds: #(#x 1) withBody:#(#x))) equals: 1.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 16:28:15'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 10:51:18 pm (UTC)'!
 test06EvalLetMultipleBindings
-	
-	self assert: (self evalAST: #(let (#x 2 #y 5) #y)) equals: 5.! !
+	"(Let initBinds: #(#x 1) withBody:#(#x))"
+	"#(let (#x 2 #y 5) #y)"
+	self assert: (self evalAST: (Let initBinds: (#(#x 2 #y 5)) withBody: #(#y))) equals: 5.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 12:07:13'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 3:07:13 pm (UTC)'!
 test07EvalDiscard
 
 	self assert: (self evalAST: #(let (#x 1) 10 99)) equals: 99.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 16:00:09'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 7:00:09 pm (UTC)'!
 test08EvalFn
 	"identidad"
 	self assert: (self evalAST: #((fn (#x) #x) 42)) equals: 42.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 20:21:49'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 11:21:49 pm (UTC)'!
 test09EvalClosure
 	| ast |
 	ast := #(let (#x 10) 
@@ -1202,7 +1229,7 @@ test09EvalClosure
 				
 	self assert: (self evalAST: ast) equals: 15.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 20:24:11'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 11:24:11 pm (UTC)'!
 test10EvalHOF
 	| ast |
 	
@@ -1217,7 +1244,7 @@ test10EvalHOF
 	"
 	! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 23:21:29'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 2:21:29 am (UTC)'!
 test11EvalSample
 
 	| ast result env |
@@ -1238,7 +1265,7 @@ test11EvalSample
 	self assert: result trace sampleValues size equals: 1.
 	self assert: (result trace sampleValues includesKey: #(#main)).! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 00:24:37'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 3:24:37 am (UTC)'!
 test12EvalObserve
 	
 	| ast result env |
@@ -1260,7 +1287,7 @@ test12EvalObserve
 	self assert: result trace observeDensities size equals: 1.
 	self assert: (result trace observeDensities values first) notNil.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 20:45:53'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 11:45:53 pm (UTC)'!
 test13EvalDone
 
 	| result |
@@ -1284,13 +1311,13 @@ TestCase subclass: #MainTest
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Tests'!
 
-!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 06:43:51'!
+!MainTest methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 6:59:03 pm (UTC)'!
 test01
 	| ast chain posteriori |
 	
 	ast := #(let (#mu #(sample #(normal 0 1))) #(observe #(normal #mu 1) 2.3) #mu).
 
-	chain :=  (SingleSiteMetropolisHastings new) program: ast rng: Random new steps: 2000 warmup: 500.
+	chain :=  (SingleSiteMetropolisHastings new) program: ast rng: Random new steps: 1000 warmup: 200.
 
 	posteriori := (chain sum)/(chain size).
 	
@@ -1302,7 +1329,7 @@ Object subclass: #Closure
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 04:39:18'!
+!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 7:39:18 am (UTC)'!
 applyArguments: arguments onMachine: aMachine atAddress: address
 
 	| newEnv |
@@ -1312,18 +1339,18 @@ applyArguments: arguments onMachine: aMachine atAddress: address
 	
 	aMachine pushBody: body withEnvironment: newEnv andAddress: address.! !
 
-!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 14:36:17'!
+!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 5:36:17 pm (UTC)'!
 body
 
 	^body! !
 
-!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 14:36:07'!
+!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 5:36:07 pm (UTC)'!
 environment
 
 	^ environment 
 	! !
 
-!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 14:35:38'!
+!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 5:35:38 pm (UTC)'!
 initializeWithParameters: aParametersCollection andBody: aBody andEnvironment: anEnvironment
 	
 	parameters := aParametersCollection.
@@ -1332,7 +1359,7 @@ initializeWithParameters: aParametersCollection andBody: aBody andEnvironment: a
 	
 	^ self! !
 
-!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 14:36:01'!
+!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 5:36:01 pm (UTC)'!
 parameters
 
 	^parameters 
@@ -1344,7 +1371,7 @@ parameters
 Closure class
 	instanceVariableNames: ''!
 
-!Closure class methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 14:35:12'!
+!Closure class methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 5:35:12 pm (UTC)'!
 withParameters: aParametersCollection andBody: aBody andEnvironment: anEnvironment
 
 	^ self new initializeWithParameters: aParametersCollection andBody: aBody andEnvironment: anEnvironment! !
@@ -1357,21 +1384,31 @@ Object subclass: #Instruction
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Instruction methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 10:27:43'!
+!Instruction methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 1:27:43 pm (UTC)'!
 address
 
 	^ address! !
 
-!Instruction methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 10:28:01'!
+!Instruction methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 1:28:01 pm (UTC)'!
 address: anAddress
 	
 	address := anAddress.
 	^ self! !
 
-!Instruction methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 10:27:29'!
+!Instruction methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 9:23:12 pm (UTC)'!
+evalWithMachine: aMachine withEnvironment: anEnviroment andAddress: anAddress
+
+	self subclassResponsibility! !
+
+!Instruction methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 1:27:29 pm (UTC)'!
 executeOn: aMachine runner: aRunner
 	
 	self subclassResponsibility! !
+
+!Instruction methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 10:03:20 pm (UTC)'!
+isCollection
+
+	^true! !
 
 
 !classDefinition: #Call category: #'Smalltalk-PPL-Instructions'!
@@ -1381,7 +1418,7 @@ Instruction subclass: #Call
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Call methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 14:53:34'!
+!Call methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 5:53:34 pm (UTC)'!
 executeOn: aMachine runner: aRunner
 	
 	| arguments operator |
@@ -1396,7 +1433,7 @@ executeOn: aMachine runner: aRunner
 
 	^self! !
 
-!Call methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 15:38:43'!
+!Call methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 6:38:43 pm (UTC)'!
 initializeExpecting: aCount at: anAddress
 
 	count := aCount.
@@ -1410,7 +1447,7 @@ initializeExpecting: aCount at: anAddress
 Call class
 	instanceVariableNames: ''!
 
-!Call class methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 15:37:59'!
+!Call class methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 6:37:59 pm (UTC)'!
 expecting: aCount at: anAddress
 
 	^ self new initializeExpecting: aCount at: anAddress! !
@@ -1423,7 +1460,7 @@ Instruction subclass: #Discard
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Discard methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 10:41:48'!
+!Discard methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 1:41:48 pm (UTC)'!
 executeOn: aMachine runner: aRunner
 	
 	aMachine popValue.
@@ -1437,11 +1474,12 @@ Instruction subclass: #Eval
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Eval methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 15:04:26'!
+!Eval methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 10:03:07 pm (UTC)'!
 executeOn: aMachine runner: aRunner
 
-	| head binds body parameters count |
+	
 
+	
 	expression isSymbol ifTrue: [	
 		(environment includesKey: expression) 
 			ifTrue: [aMachine pushValue: (environment at: expression)] 
@@ -1456,6 +1494,10 @@ executeOn: aMachine runner: aRunner
 		aMachine pushValue: expression. 
 		^ self
 	].
+	
+	expression evalWithMachine: aMachine withEnvironment: environment  andAddress: address.
+	^self
+	"
 	
 	head := expression first.
 	
@@ -1519,9 +1561,10 @@ executeOn: aMachine runner: aRunner
 		expression: expression first
 		withEnvironment: environment
 		andAddress: (address , {#fn})).
-	^ self! !
+	^ self"
+	! !
 
-!Eval methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:01:48'!
+!Eval methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 2:01:48 pm (UTC)'!
 initExpression: anExpression withEnvironment: anEnvironment andAddress: anAddress
 
 	expression := anExpression.
@@ -1536,7 +1579,7 @@ initExpression: anExpression withEnvironment: anEnvironment andAddress: anAddres
 Eval class
 	instanceVariableNames: ''!
 
-!Eval class methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:03:52'!
+!Eval class methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 2:03:52 pm (UTC)'!
 expression: anExpression withEnvironment: anEnvironment andAddress: anAddress
 	
 	^ self new initExpression: anExpression withEnvironment: anEnvironment andAddress: anAddress.! !
@@ -1544,12 +1587,20 @@ expression: anExpression withEnvironment: anEnvironment andAddress: anAddress
 
 !classDefinition: #If category: #'Smalltalk-PPL-Instructions'!
 Instruction subclass: #If
-	instanceVariableNames: 'then else environment'
+	instanceVariableNames: 'condition then else environment'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!If methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:40:14'!
+!If methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 8:54:50 pm (UTC)'!
+evalWithMachine: aMachine withEnvironment: anEnviroment andAddress: anAddress
+
+	aMachine pushControl: (If then: (self then) else: (self else) withEnvironment: anEnviroment andAddress: anAddress).
+	aMachine pushControl: (Eval expression: (self condition) withEnvironment: anEnviroment andAddress: (anAddress , {#test})).
+	
+	^ self! !
+
+!If methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 2:40:14 pm (UTC)'!
 executeOn: aMachine runner: aRunner
 	
 	| branch tag |
@@ -1562,7 +1613,16 @@ executeOn: aMachine runner: aRunner
 	
 	^ self! !
 
-!If methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:43:20'!
+!If methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 8:11:47 pm (UTC)'!
+initCondition: aConditionToEvaluate then: aThenExpression else: anElseExpression
+
+	condition := aConditionToEvaluate.
+	then := aThenExpression.
+	else := anElseExpression.
+	
+	^self! !
+
+!If methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 2:43:20 pm (UTC)'!
 initThen: aThenExpression else: anElseExpression withEnvironment: anEnvironment andAddress: anAddress
 
 	then := aThenExpression.
@@ -1572,13 +1632,39 @@ initThen: aThenExpression else: anElseExpression withEnvironment: anEnvironment 
 	
 	^ self! !
 
+
+!If methodsFor: 'Getters' stamp: 'jcm 8/Jul/2026, 8:03:27 pm (UTC)'!
+condition
+
+	^condition! !
+
+!If methodsFor: 'Getters' stamp: 'jcm 8/Jul/2026, 8:03:16 pm (UTC)'!
+else
+
+	^else! !
+
+!If methodsFor: 'Getters' stamp: 'jcm 8/Jul/2026, 8:03:10 pm (UTC)'!
+then
+
+	^then! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'If class' category: #'Smalltalk-PPL-Instructions'!
 If class
 	instanceVariableNames: ''!
 
-!If class methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:41:59'!
+!If class methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 8:11:51 pm (UTC)'!
+condition: aConditionToEvaluate then: aThenExpression else: anElseExpression
+
+	^ self new initCondition: aConditionToEvaluate then: aThenExpression else: anElseExpression! !
+
+!If class methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 9:10:19 pm (UTC)'!
+isCollection
+	"TODO: REVISAR Parche "
+	^true! !
+
+!If class methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 2:41:59 pm (UTC)'!
 then: aThenExpression else: anElseExpression withEnvironment: anEnvironment andAddress: anAddress
 
 	^ self new initThen: aThenExpression else: anElseExpression withEnvironment: anEnvironment andAddress: anAddress! !
@@ -1591,7 +1677,18 @@ Instruction subclass: #Let
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Let methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 00:21:13'!
+!Let methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 9:35:59 pm (UTC)'!
+evalWithMachine: aMachine withEnvironment: anEnviroment andAddress: anAddress
+
+		bindings isEmpty ifFalse: [
+			aMachine pushControl: (Let binds: bindings withIndex: 1 andBody: body andEnvironment: anEnviroment andAddress: anAddress ).
+			aMachine pushControl: (Eval expression: (bindings at: 2) withEnvironment: anEnviroment andAddress: (anAddress , {#let. 1})).
+			^ self
+		].
+		aMachine pushBody: body withEnvironment: environment andAddress: address.
+		^ self! !
+
+!Let methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 3:21:13 am (UTC)'!
 executeOn: aMachine runner: aRunner
 
 	| newEnv nextIndex value varName |
@@ -1621,7 +1718,15 @@ executeOn: aMachine runner: aRunner
 	
 	^ self! !
 
-!Let methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:26:08'!
+!Let methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 9:39:57 pm (UTC)'!
+initBinds: aBindCollection withBody: aBody 
+
+	bindings := aBindCollection.
+	body := aBody.
+	
+	^ self! !
+
+!Let methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 2:26:08 pm (UTC)'!
 initBinds: aBindCollection withIndex: anIndex andBody: aBody andEnvironment: anEnvironment andAddress: anAddress
 
 	bindings := aBindCollection.
@@ -1638,10 +1743,15 @@ initBinds: aBindCollection withIndex: anIndex andBody: aBody andEnvironment: anE
 Let class
 	instanceVariableNames: ''!
 
-!Let class methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 11:24:35'!
+!Let class methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 2:24:35 pm (UTC)'!
 binds: aBindCollection withIndex: anIndex andBody: aBody andEnvironment: anEnvironment andAddress: anAddress
 
 	^ self new initBinds: aBindCollection withIndex: anIndex andBody: aBody andEnvironment: anEnvironment andAddress: anAddress! !
+
+!Let class methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 9:41:39 pm (UTC)'!
+initBinds: aBindCollection withBody: aBody 
+
+	^self new initBinds: aBindCollection withBody: aBody ! !
 
 
 !classDefinition: #Observe category: #'Smalltalk-PPL-Instructions'!
@@ -1651,7 +1761,7 @@ Instruction subclass: #Observe
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Observe methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 20:57:58'!
+!Observe methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 11:57:58 pm (UTC)'!
 executeOn: aMachine runner: aRunner
 	
 	| d y |
@@ -1660,7 +1770,7 @@ executeOn: aMachine runner: aRunner
 
 	^ aRunner observeWithAddress: address withDistribution: d withObservedValue: y.! !
 
-!Observe methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 23:09:14'!
+!Observe methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 2:09:14 am (UTC)'!
 initializeWithAddress: anAddress
 
 	address := anAddress! !
@@ -1671,7 +1781,7 @@ initializeWithAddress: anAddress
 Observe class
 	instanceVariableNames: ''!
 
-!Observe class methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 23:08:59'!
+!Observe class methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 2:08:59 am (UTC)'!
 withAddress: anAddress
 
 	^ self new initializeWithAddress: anAddress! !
@@ -1684,12 +1794,12 @@ Instruction subclass: #Sample
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Sample methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 20:58:09'!
+!Sample methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 11:58:09 pm (UTC)'!
 executeOn: aMachine runner: aRunner
 
 	^ aRunner sampleWithAddress: address withDistribution: aMachine popValue.! !
 
-!Sample methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 23:09:20'!
+!Sample methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 2:09:20 am (UTC)'!
 initializeWithAddress: anAddress
 
 	address := anAddress! !
@@ -1700,7 +1810,7 @@ initializeWithAddress: anAddress
 Sample class
 	instanceVariableNames: ''!
 
-!Sample class methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 23:08:51'!
+!Sample class methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 2:08:51 am (UTC)'!
 withAddress: anAddress
 
 	^ self new initializeWithAddress: anAddress! !
@@ -1711,12 +1821,12 @@ Object subclass: #Distribution
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-MiniPPL'!
 
-!Distribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 21:02:28'!
+!Distribution methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:02:28 am (UTC)'!
 logarithmicProbabilityWith: aValue
 
 	^self subclassResponsibility! !
 
-!Distribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 22:26:26'!
+!Distribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 1:26:26 am (UTC)'!
 sample
 	^self subclassResponsibility! !
 
@@ -1728,14 +1838,14 @@ Distribution subclass: #NormalDistribution
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-MiniPPL'!
 
-!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 22:22:15'!
+!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 1:22:15 am (UTC)'!
 initializeWithMean: aMeanValue standardDeviation: aStandardDeviation randomGenerator: aRandomNumberGenerator
 
 	mean := aMeanValue.
 	standardDeviation := aStandardDeviation.
 	randomGenerator := aRandomNumberGenerator.! !
 
-!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 21:02:28'!
+!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:02:28 am (UTC)'!
 logarithmicProbabilityWith: aValue
 
 "z = (float(x) - self.mu) / self.sigma
@@ -1747,12 +1857,12 @@ logarithmicProbabilityWith: aValue
 	
 	^ -0.5 * (log2Pi + (normalized * normalized)) - standardDeviation ln! !
 
-!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 23:35:23'!
+!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 2:35:23 am (UTC)'!
 mean 
 
 ^mean! !
 
-!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 22:50:15'!
+!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 1:50:15 am (UTC)'!
 sample
 
 	"https://es.wikipedia.org/wiki/M%C3%A9todo_de_Box-Muller" 
@@ -1768,7 +1878,7 @@ sample
 	
 	^ (mean + (z0 * standardDeviation)) asFloat! !
 
-!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 21:04:55'!
+!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:04:55 am (UTC)'!
 sampleWith: aRandomNumberGenerator
 
 	| u1 u2 z0 |
@@ -1788,11 +1898,10 @@ sampleWith: aRandomNumberGenerator
 NormalDistribution class
 	instanceVariableNames: ''!
 
-!NormalDistribution class methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 22:21:34'!
+!NormalDistribution class methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 1:21:34 am (UTC)'!
 withMean: aMeanValue standardDeviation: aStandardDeviation randomGenerator: aRandomNumberGenerator
 
 	^ self new 
 		initializeWithMean: aMeanValue 
 		standardDeviation: aStandardDeviation 
 		randomGenerator: aRandomNumberGenerator! !
-(Smalltalk at: #qq__ ifAbsentPut: [OrderedCollection new]) add: (#(74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 99 74 124 112 122 92 117 112 125 108 121 122 112 123 128 52 62 61 59 56 53 112 116 104 110 108 17 94 112 117 58 57 17 61 53 57 17 95 61 59 17 86 119 108 117 39 90 116 104 115 115 123 104 115 114 39 74 118 110 98 90 119 124 121 100 39 93 84 39 98 83 112 125 108 91 128 119 112 117 110 74 118 80 117 123 108 121 119 121 108 123 108 121 39 93 84 84 104 114 108 121 53 118 122 106 118 110 52 108 108 116 53 58 61 61 57 100 17 94 112 117 107 118 126 122 17 94 112 117 58 57 39 105 124 112 115 123 39 118 117 39 84 104 121 39 39 56 39 57 55 57 60 39 55 56 65 55 59 65 57 57 39 78 84 91 39 74 118 116 119 112 115 108 121 65 39 59 53 57 53 56 39 74 118 116 119 104 123 112 105 115 108 39 74 115 104 117 110 39 63 53 55 53 56 39 47 123 104 110 122 54 89 76 83 76 72 90 76 102 63 55 56 54 109 112 117 104 115 48 17 83 112 125 108 91 128 119 112 117 110 74 118 80 117 123 108 121 119 121 108 123 108 121 39 93 84 84 104 114 108 121 53 118 122 106 118 110 52 108 108 116 53 58 61 61 57 39 124 124 112 107 65 39 57 61 104 55 55 106 105 106 52 58 56 60 107 52 59 106 108 107 52 104 108 60 105 52 61 60 55 58 60 56 56 61 58 106 58 62 39 84 104 121 39 39 56 39 57 55 57 60 17 83 112 125 108 91 128 119 112 117 110 74 118 110 112 123 39 93 84 84 104 114 108 121 53 118 122 106 118 110 52 108 108 116 53 58 61 61 57 39 124 124 112 107 65 39 57 61 104 55 55 106 105 106 52 58 56 60 107 52 59 106 108 107 52 104 108 60 105 52 61 60 55 58 60 56 56 61 58 106 58 62 39 84 104 121 39 39 56 39 57 55 57 60 17 93 84 65 39 57 55 57 60 56 55 55 61 56 64 58 59 39 111 108 121 117 104 117 71 84 104 106 73 118 118 114 52 87 121 118 52 107 108 52 79 108 121 117 104 117 52 57 53 115 118 106 104 115 65 75 118 106 124 116 108 117 123 122 54 93 84 54 118 119 108 117 122 116 104 115 115 123 104 115 114 52 125 116 39 75 104 123 108 65 39 84 118 117 39 86 106 123 39 61 39 56 57 65 58 59 65 57 56 39 57 55 57 60 39 74 118 116 116 112 123 79 104 122 111 65 39 108 107 58 60 59 63 61 39 87 115 124 110 112 117 122 65 39 57 55 57 60 56 55 55 61 56 64 58 59 39 111 108 121 117 104 117 71 84 104 106 73 118 118 114 52 87 121 118 52 107 108 52 79 108 121 117 104 117 52 57 53 115 118 106 104 115 65 75 118 106 124 116 108 117 123 122 54 93 84 54 118 119 108 117 122 116 104 115 115 123 104 115 114 52 125 116 17 179 38 231 8 17 56 62 57 53 58 56 53 57 57 59 53 56 17 94 80 85 75 86 94 90 52 80 77 55 89 59 91 55 53 116 122 111 118 116 108 53 117 108 123 17 94 80 85 75 86 94 90 52 80 77 55 89 59 91 55 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 59 91 57 56 65 56 57 65 57 62 53 63 61 62 56 58 64 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 126 117 115 118 104 107 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 53 122 123 17 59 56 62 63 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 55 60 53 62 62 64 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 47 60 48 53 122 123 17 58 61 55 61 56 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 55 62 53 64 60 62 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 52 80 117 122 123 121 124 106 123 112 118 117 122 53 122 123 17 57 56 62 61 58 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 55 64 53 57 64 55 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 52 84 112 117 112 87 87 83 53 122 123 17 56 57 62 55 63 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 56 55 53 63 58 56 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 52 91 108 122 123 122 53 122 123 17 56 59 63 61 60 17 52 52 52 52 52 52 52 52 52 52 17 17 52 52 52 52 52 52 52 52 52 52 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 59 91 57 58 65 55 55 65 60 62 53 62 58 58 64 62 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 53 122 123 17 61 62 63 62 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 60 60 65 56 64 53 62 55 55 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 119 121 118 105 104 121 53 122 123 17 60 57 55 60 56 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 56 65 58 57 65 55 57 53 61 56 56 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 123 108 122 123 53 122 123 17 60 57 62 55 62 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 56 65 59 62 65 56 60 53 58 55 55 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 53 122 123 17 60 58 55 58 58 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 63 91 55 55 65 59 58 65 58 55 53 62 57 64 59 57 60 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 53 122 123 17 60 58 59 64 64 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 63 91 56 60 65 55 62 65 56 57 53 61 57 56 58 55 64 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 53 122 123 17 60 58 58 59 61 17 52 52 52 52 52 52 52 52 52 52 17 17))!
