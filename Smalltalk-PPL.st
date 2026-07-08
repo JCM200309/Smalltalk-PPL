@@ -5,6 +5,16 @@ Object subclass: #AlgorithmRunner
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
+!AlgorithmRunner methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 05:04:22'!
+initialEnvironment
+	| env |
+	env := Dictionary new.
+	env at: #+ put: #+.
+	env at: #- put: #-.
+	env at: #* put: #*.
+	env at: #normal put: #normal.
+	^env! !
+
 !AlgorithmRunner methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 7:28:24 pm (UTC)'!
 run
 
@@ -66,20 +76,20 @@ doneWithValue: aReturnValue
 	
 	^LWRun withLogW: machine logW  withValue: aReturnValue.! !
 
-!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/7/2026 21:23:55'!
+!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 03:54:08'!
 observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
 
 	
 	machine incrementLogW: (aDistribution logarithmicProbabilityWith: anObservedValue).
-	machine send: anObservedValue.
+	machine pushValue: anObservedValue.
 	
 	^nil.! !
 
-!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/7/2026 21:24:01'!
+!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 03:54:02'!
 sampleWithAddress: anAddress withDistribution: aDistribution
 
 	
-	machine send: (aDistribution sample).
+	machine pushValue: (aDistribution sample).
 	
 	^nil! !
 
@@ -195,7 +205,7 @@ runWithProgram: aProgram withRng: aRandomNumberGenerator  withParticles: aCollec
 	! !
 
 
-!SMCRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/7/2026 21:23:41'!
+!SMCRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 03:54:17'!
 observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
 
 	| logIncrement |
@@ -203,15 +213,15 @@ observeWithAddress: anAddress withDistribution: aDistribution withObservedValue:
 	
 	"Machine es la particula actual sobre la cual se esta avanzando, se define en el metodo advance"
 	machine incrementLogW: logIncrement.
-	machine send: anObservedValue.
+	machine pushValue: anObservedValue.
 	
 	^SMCObserve withAddress: anAddress forParticle: machine withLogIncrement: logIncrement! !
 
-!SMCRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/7/2026 21:23:29'!
+!SMCRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 03:54:20'!
 sampleWithAddress: anAddress withDistribution: aDistribution
 
 	
-	machine send: (aDistribution sample).
+	machine pushValue: (aDistribution sample).
 	
 	^nil! !
 
@@ -235,23 +245,23 @@ doneWithValue: aReturnValue
 	
 	! !
 
-!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/7/2026 21:45:24'!
+!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 14:51:46'!
 observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
 
 	
-	trace updateObservedCacheAt: aDistribution put: (aDistribution logarithmicProbabilityWith: anObservedValue) .
+	trace updateObservedCacheAt: anAddress put: (aDistribution logarithmicProbabilityWith: anObservedValue) .
 	machine pushValue: anObservedValue.
 	
 	^nil.! !
 
-!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/7/2026 21:41:22'!
+!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/8/2026 06:26:19'!
 sampleWithAddress: anAddress withDistribution: aDistribution 
 
 	| sampledValue |
 	
 	trace ifNil: [ trace := MHTrace new ]. "volver a verificar esto"
 	
-	(anAddress ~= redrawAddress and: [cache notNil and: [cache includes: anAddress]])
+	(anAddress ~= redrawAddress and: [cache notNil and: [cache includesKey: anAddress]])
 		ifTrue:[sampledValue := cache at: anAddress ]
 		ifFalse:[sampledValue := aDistribution sample ]. "hay que ver esto, randomGenerator tira nil con sampleWith"
 		
@@ -323,6 +333,11 @@ AlgorithmRuns subclass: #LWRun
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
+
+!LWRun methodsFor: 'Instance Creation' stamp: 'L.C 7/8/2026 04:46:10'!
+logW
+
+	^logW! !
 
 !LWRun methodsFor: 'Instance Creation' stamp: 'jcm 6/Jul/2026, 7:47:50 pm (UTC)'!
 withLogW: aLogWValue  withValue: aReturnValue
@@ -463,10 +478,10 @@ logDensityExcluding: excludedAddresses
 observeDensities
 ^observeDensities! !
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'JCM 5/Jul/2026, 2:13:50 am (UTC)'!
+!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 04:34:21'!
 randomSampleAdressUsing: aRandomNumberGenerator
 
-	^sampleValues asArray atRandom: aRandomNumberGenerator .! !
+	^sampleValues keys atRandom: aRandomNumberGenerator.! !
 
 !MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 12:49:22 pm (UTC)'!
 sampleDensities
@@ -499,27 +514,18 @@ Object subclass: #Machine
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!Machine methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 00:55:51'!
+!Machine methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 04:51:53'!
 executePrimitive: anOperator withArguments: anArguments
 
-	| distribution |
-	
-	anOperator == #+ ifTrue: [ ^ (anArguments at: 1) + (anArguments at: 2) ].
-	anOperator == #* ifTrue: [ ^ (anArguments at: 1) * (anArguments at: 2) ].
-	anOperator == #- ifTrue: [ ^ (anArguments at: 1) - (anArguments at: 2) ].
-	anOperator == #/ ifTrue: [ ^ (anArguments at: 1) / (anArguments at: 2) ].
-	anOperator == #= ifTrue: [ ^ (anArguments at: 1) = (anArguments at: 2) ].
-	anOperator == #normal ifTrue: [
-		distribution := NormalDistribution
-		 
-		withMean: (anArguments at: 1) 
-		standardDeviation: (anArguments at: 2) 
-		randomGenerator: randomGenerator.
-		
-		self pushValue: distribution.
-		
-		^ distribution
-	].
+	anOperator == #+ ifTrue: [^(anArguments at: 1) + (anArguments at: 2)].
+	anOperator == #* ifTrue: [^(anArguments at: 1) * (anArguments at: 2)].
+	anOperator == #- ifTrue: [^(anArguments at: 1) - (anArguments at: 2)].
+	anOperator == #/ ifTrue: [^(anArguments at: 1) / (anArguments at: 2)].
+	anOperator == #= ifTrue: [^(anArguments at: 1) = (anArguments at: 2)].
+	anOperator == #normal ifTrue: [^NormalDistribution
+			withMean: (anArguments at: 1) 
+			standardDeviation: (anArguments at: 2) 
+			randomGenerator: randomGenerator].
 	
 	^self error: 'Not Implemented: ' , anOperator asString.! !
 
@@ -712,21 +718,28 @@ PPLAlgorithm subclass: #Likelihood_weighting
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL'!
 
-!Likelihood_weighting methodsFor: 'as yet unclassified' stamp: 'L.C 7/7/2026 22:19:42'!
+!Likelihood_weighting methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 14:52:38'!
 program: aProgram rng:aRandomNumberGenerator for: aNumberOfSteps
 
-	| run values log_w|
+	| runs values log_w normalized |
 	runner := LWRunner.
-	values := OrderedCollection new.
-	log_w := OrderedCollection new.
+	runs := OrderedCollection new.
 	
-	1 to: aNumberOfSteps do: [run := runner runWithProgram: aProgram withRng: aRandomNumberGenerator.].
+	1 to: aNumberOfSteps do: [:i | runs add: (runner runWithProgram: aProgram withRng: aRandomNumberGenerator).].
 	
-	values := run collect: [ :r | r value asFloat ].
-	log_w := run collect: [ :r | r logW ].
+	values := runs collect: [ :r | r value asFloat ].
+	log_w := runs collect: [ :r | r logW ].
 	
-	"softmax no fue implementado aun"
-	^LWResult values: values withLogW: log_w softmax! !
+	"https://es.wikipedia.org/wiki/Funci%C3%B3n_SoftMax"
+	log_w isEmpty 
+		ifTrue: [ normalized := log_w copy ]
+		ifFalse: [ | expSum maxLog |
+			maxLog := log_w inject: log_w first into: [:max :each | max max: each].
+			expSum := log_w inject: 0.0 into: [:sum :each | (each-maxLog) exp + sum].
+			normalized := log_w collect: [ :each | (each-maxLog) exp / expSum ].
+		].
+	
+	^LWResult values: values withLogW: normalized! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -864,10 +877,10 @@ checkAcceptionOf: aNewRunOfSSMH comparingWith: anOldRunOfSSMH with: aRandomNumbe
             ].
 ! !
 
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 8:15:30 pm (UTC)'!
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 06:04:58'!
 checkPassWarmup: aNumberOfWarmups Iterations: aNumberOfIteration
 
-	aNumberOfIteration >= aNumberOfWarmups ifTrue:[chain add: currentRun trace value asFloat].
+	aNumberOfIteration >= aNumberOfWarmups ifTrue:[chain add: currentRun value asFloat].
 	
 
 
@@ -885,7 +898,7 @@ initialTraceOfProgram: aProgram withRng: aRandomNumberGenerator for: aNumberOfSt
 
 ! !
 
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 8:13:52 pm (UTC)'!
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 06:34:04'!
 program: aProgram rng:aRandomNumberGenerator steps: aNumberOfSteps warmup: aNumberOfWarmups
 
 	| newRun |
@@ -893,9 +906,9 @@ program: aProgram rng:aRandomNumberGenerator steps: aNumberOfSteps warmup: aNumb
 	self initialTraceOfProgram: aProgram withRng: aRandomNumberGenerator for: aNumberOfSteps  withWarmup: aNumberOfWarmups.
 	
 	1 to: aNumberOfSteps + aNumberOfWarmups do:[ :i  |  | a0 proposedTrace currentTrace|
-		currentTrace := currentRun .
-		a0 := currentTrace randomSampleAdressUsing: aRandomNumberGenerator.
-		newRun := runner run: aProgram withRng: aRandomNumberGenerator redrawAddress: a0 withCache: currentTrace sampleValues.
+		currentTrace := currentRun trace.
+		a0 := currentRun trace randomSampleAdressUsing: aRandomNumberGenerator.
+		newRun := runner run: aProgram withRng: aRandomNumberGenerator redrawAddress: a0 withCache: currentRun trace sampleValues.
 		proposedTrace := newRun trace.
 	 	self checkAcceptionOf: newRun comparingWith: currentRun with: aRandomNumberGenerator with: a0.
 		self checkPassWarmup: aNumberOfWarmups Iterations: i.
@@ -916,16 +929,15 @@ run: aProgram withRng: aRandomNumberGenerator resamplingSite: a0 withCache: aCol
 
 ! !
 
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 12:51:07 pm (UTC)'!
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 06:02:40'!
 sumOfObserveDensities: observeDensities andSampleDensities: sampleDensities excluding: excludedAddresses
 
 	"esto se puede polimorfear para que tome la densidad de una traza directamente con excluding: forwardEA/reverseEA"
 
 	| density |
 
-	density := 0.
-
-	density := observeDensities sum.
+	density := 0.0.
+	observeDensities valuesDo: [:prob | density := density+prob].
 
 	sampleDensities keysAndValuesDo: [:address :prob | (excludedAddresses includes: address) ifFalse: [ density := density + prob ]].
 
@@ -1264,23 +1276,6 @@ test13EvalDone
 	self assert: result class equals: SSMHRun.
 	self assert: result value equals: 99.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 23:34:51'!
-test14EvalNormalDistribution
-
-	| result env |
-
-	env := {#normal -> #normal } asDictionary.
-	
-	machine := self dummyMachineWithControlStack: {
-		Eval expression: #(normal 0.0 1.0) withEnvironment: env andAddress: #(#test)
-	}.
-	
-	result := machine resumeRunner: runner.
-	
-	self assert: machine popValue class equals: NormalDistribution.
-	
-	self assert: machine popValue mean equals: 0.0.! !
-
 
 !classDefinition: #MainTest category: #'Smalltalk-PPL-Tests'!
 TestCase subclass: #MainTest
@@ -1289,25 +1284,17 @@ TestCase subclass: #MainTest
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Tests'!
 
-!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 01:00:46'!
+!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 06:43:51'!
 test01
-	| ast runner result run |
+	| ast chain posteriori |
 	
 	ast := #(let (#mu #(sample #(normal 0 1))) #(observe #(normal #mu 1) 2.3) #mu).
 
-	runner := SSMHRunner new.
-	run := runner 
-		run: ast 
-		withRng: Random new
-		redrawAddress: nil 
-		withCache: Dictionary new.
+	chain :=  (SingleSiteMetropolisHastings new) program: ast rng: Random new steps: 2000 warmup: 500.
+
+	posteriori := (chain sum)/(chain size).
 	
-	result := run value.
-	
-	self assert: result isNil not.
-	self assert: (result isNumber).
-	"Esto NO anda bien porque estoy tomando el logProb de la primitiva y no el que deberiamos usar creo, sino es error semantico"
-	self assert: (result > -3 and: [result < 3]). "tira numeros FEOS FEOS, diverge bastante"! !
+	self assert: (posteriori between: 0.9 and: 1.4).! !
 !classDefinition: #Closure category: #'Smalltalk-PPL-Instructions'!
 Object subclass: #Closure
 	instanceVariableNames: 'parameters body environment'
@@ -1315,8 +1302,15 @@ Object subclass: #Closure
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 15:40:31'!
-applyArguments: arguments onMachine: aMachine atAddress: address! !
+!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 04:39:18'!
+applyArguments: arguments onMachine: aMachine atAddress: address
+
+	| newEnv |
+	newEnv := environment copy.
+	
+	1 to: arguments size do: [:index | newEnv at: (parameters at: index) put: (arguments at: index)].
+	
+	aMachine pushBody: body withEnvironment: newEnv andAddress: address.! !
 
 !Closure methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 14:36:17'!
 body
@@ -1387,26 +1381,19 @@ Instruction subclass: #Call
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Call methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 20:11:22'!
+!Call methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 14:53:34'!
 executeOn: aMachine runner: aRunner
 	
-	| arguments operator body newEnv params |
+	| arguments operator |
 	
 	arguments := aMachine popValues: count.
-	
 	operator := aMachine popValue.
 	
-	"primitivas aritmeticas"
+	"primitivas"
 	operator isSymbol ifTrue: [ aMachine pushValue: (aMachine executePrimitive: operator withArguments: arguments). ^self].
 	
-	(operator isArray and: [ operator notEmpty and: [ operator first == #closure ] ]) ifTrue: [
-		params := operator at: 2.
-		body := operator at: 3.
-		newEnv := (operator at: 4) copy.
-				
-		1 to: count do: [ :index | newEnv at: (params at: index) put: (arguments at: index) ].
+	operator applyArguments: arguments onMachine: aMachine atAddress: address.
 
-		aMachine pushBody: body withEnvironment: newEnv andAddress: address].
 	^self! !
 
 !Call methodsFor: 'as yet unclassified' stamp: 'L.C 7/6/2026 15:38:43'!
@@ -1450,7 +1437,7 @@ Instruction subclass: #Eval
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Eval methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 00:04:39'!
+!Eval methodsFor: 'as yet unclassified' stamp: 'L.C 7/8/2026 15:04:26'!
 executeOn: aMachine runner: aRunner
 
 	| head binds body parameters count |
@@ -1459,7 +1446,7 @@ executeOn: aMachine runner: aRunner
 		(environment includesKey: expression) 
 			ifTrue: [aMachine pushValue: (environment at: expression)] 
 			ifFalse: [
-				(#(+ - * / =) includes: expression) "FALTAN PRIMITIVAS están en miniPPL"
+				(#(+ - * / = #normal) includes: expression) "FALTAN PRIMITIVAS están en miniPPL"
 					ifTrue: [ aMachine pushValue: expression]
 					ifFalse: [ self error: 'NameError: ' , expression asString]
 				]. 
@@ -1487,14 +1474,14 @@ executeOn: aMachine runner: aRunner
 			aMachine pushControl: (Eval expression: (binds at: 2) withEnvironment: environment andAddress: (address , {#let. 1})).
 			^ self
 		].
-		self pushBody: body withEnvironment: environment andAddress: address.
+		aMachine pushBody: body withEnvironment: environment andAddress: address.
 		^ self
 	].
 	
 	head == #fn ifTrue: [
 		parameters := expression at: 2.
 		body := expression copyFrom: 3 to: expression size.
-		aMachine pushValue: { #closure . parameters . body . environment }.
+		aMachine pushValue: (Closure withParameters: parameters andBody: body andEnvironment: environment).
 		^ self.
 	].
 
@@ -1808,4 +1795,4 @@ withMean: aMeanValue standardDeviation: aStandardDeviation randomGenerator: aRan
 		initializeWithMean: aMeanValue 
 		standardDeviation: aStandardDeviation 
 		randomGenerator: aRandomNumberGenerator! !
-(Smalltalk at: #qq__ ifAbsentPut: [OrderedCollection new]) add: (#(74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 99 74 124 112 122 92 117 112 125 108 121 122 112 123 128 52 62 61 59 56 53 112 116 104 110 108 17 94 112 117 58 57 17 61 53 57 17 95 61 59 17 86 119 108 117 39 90 116 104 115 115 123 104 115 114 39 74 118 110 98 90 119 124 121 100 39 93 84 39 98 83 112 125 108 91 128 119 112 117 110 74 118 80 117 123 108 121 119 121 108 123 108 121 39 93 84 84 104 114 108 121 53 118 122 106 118 110 52 108 108 116 53 58 61 61 57 100 17 94 112 117 107 118 126 122 17 94 112 117 58 57 39 105 124 112 115 123 39 118 117 39 84 104 121 39 39 56 39 57 55 57 60 39 55 56 65 55 59 65 57 57 39 78 84 91 39 74 118 116 119 112 115 108 121 65 39 59 53 57 53 56 39 74 118 116 119 104 123 112 105 115 108 39 74 115 104 117 110 39 63 53 55 53 56 39 47 123 104 110 122 54 89 76 83 76 72 90 76 102 63 55 56 54 109 112 117 104 115 48 17 83 112 125 108 91 128 119 112 117 110 74 118 80 117 123 108 121 119 121 108 123 108 121 39 93 84 84 104 114 108 121 53 118 122 106 118 110 52 108 108 116 53 58 61 61 57 39 124 124 112 107 65 39 57 61 104 55 55 106 105 106 52 58 56 60 107 52 59 106 108 107 52 104 108 60 105 52 61 60 55 58 60 56 56 61 58 106 58 62 39 84 104 121 39 39 56 39 57 55 57 60 17 83 112 125 108 91 128 119 112 117 110 74 118 110 112 123 39 93 84 84 104 114 108 121 53 118 122 106 118 110 52 108 108 116 53 58 61 61 57 39 124 124 112 107 65 39 57 61 104 55 55 106 105 106 52 58 56 60 107 52 59 106 108 107 52 104 108 60 105 52 61 60 55 58 60 56 56 61 58 106 58 62 39 84 104 121 39 39 56 39 57 55 57 60 17 93 84 65 39 57 55 57 60 56 55 55 61 56 64 58 59 39 111 108 121 117 104 117 71 84 104 106 73 118 118 114 52 87 121 118 52 107 108 52 79 108 121 117 104 117 52 57 53 115 118 106 104 115 65 75 118 106 124 116 108 117 123 122 54 93 84 54 118 119 108 117 122 116 104 115 115 123 104 115 114 52 125 116 39 75 104 123 108 65 39 84 118 117 39 86 106 123 39 61 39 56 57 65 58 59 65 57 56 39 57 55 57 60 39 74 118 116 116 112 123 79 104 122 111 65 39 108 107 58 60 59 63 61 39 87 115 124 110 112 117 122 65 39 57 55 57 60 56 55 55 61 56 64 58 59 39 111 108 121 117 104 117 71 84 104 106 73 118 118 114 52 87 121 118 52 107 108 52 79 108 121 117 104 117 52 57 53 115 118 106 104 115 65 75 118 106 124 116 108 117 123 122 54 93 84 54 118 119 108 117 122 116 104 115 115 123 104 115 114 52 125 116 17 179 31 215 8 17 56 62 57 53 57 59 53 57 55 63 53 56 17 94 80 85 75 86 94 90 52 80 77 55 89 59 91 55 53 116 122 111 118 116 108 53 117 108 123 17 94 80 85 75 86 94 90 52 80 77 55 89 59 91 55 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 59 91 57 56 65 56 57 65 57 62 53 63 61 62 56 58 64 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 126 117 115 118 104 107 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 53 122 123 17 59 56 62 63 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 55 60 53 62 62 64 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 47 60 48 53 122 123 17 58 61 55 61 56 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 55 62 53 64 60 62 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 52 80 117 122 123 121 124 106 123 112 118 117 122 53 122 123 17 57 56 62 61 58 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 55 64 53 57 64 55 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 52 84 112 117 112 87 87 83 53 122 123 17 56 57 62 55 63 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 56 55 53 63 58 56 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 52 91 108 122 123 122 53 122 123 17 56 59 63 61 60 17 52 52 52 52 52 52 52 52 52 52 17 17 52 52 52 52 52 52 52 52 52 52 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 59 91 57 58 65 55 55 65 60 62 53 62 58 58 64 62 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 53 122 123 17 61 62 63 62 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 60 60 65 56 64 53 62 55 55 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 119 121 118 105 104 121 53 122 123 17 60 57 55 60 56 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 56 65 58 57 65 55 57 53 61 56 56 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 123 108 122 123 53 122 123 17 60 57 62 55 62 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 56 65 59 62 65 56 60 53 58 55 55 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 53 122 123 17 60 58 55 58 58 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 63 91 55 55 65 59 58 65 58 55 53 62 57 64 59 57 60 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 53 122 123 17 60 58 59 64 64 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 63 91 55 56 65 55 56 65 59 61 53 62 55 62 59 57 60 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 53 122 123 17 60 58 60 60 64 17 52 52 52 52 52 52 52 52 52 52 17 17))!
+(Smalltalk at: #qq__ ifAbsentPut: [OrderedCollection new]) add: (#(74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 99 74 124 112 122 92 117 112 125 108 121 122 112 123 128 52 62 61 59 56 53 112 116 104 110 108 17 94 112 117 58 57 17 61 53 57 17 95 61 59 17 86 119 108 117 39 90 116 104 115 115 123 104 115 114 39 74 118 110 98 90 119 124 121 100 39 93 84 39 98 83 112 125 108 91 128 119 112 117 110 74 118 80 117 123 108 121 119 121 108 123 108 121 39 93 84 84 104 114 108 121 53 118 122 106 118 110 52 108 108 116 53 58 61 61 57 100 17 94 112 117 107 118 126 122 17 94 112 117 58 57 39 105 124 112 115 123 39 118 117 39 84 104 121 39 39 56 39 57 55 57 60 39 55 56 65 55 59 65 57 57 39 78 84 91 39 74 118 116 119 112 115 108 121 65 39 59 53 57 53 56 39 74 118 116 119 104 123 112 105 115 108 39 74 115 104 117 110 39 63 53 55 53 56 39 47 123 104 110 122 54 89 76 83 76 72 90 76 102 63 55 56 54 109 112 117 104 115 48 17 83 112 125 108 91 128 119 112 117 110 74 118 80 117 123 108 121 119 121 108 123 108 121 39 93 84 84 104 114 108 121 53 118 122 106 118 110 52 108 108 116 53 58 61 61 57 39 124 124 112 107 65 39 57 61 104 55 55 106 105 106 52 58 56 60 107 52 59 106 108 107 52 104 108 60 105 52 61 60 55 58 60 56 56 61 58 106 58 62 39 84 104 121 39 39 56 39 57 55 57 60 17 83 112 125 108 91 128 119 112 117 110 74 118 110 112 123 39 93 84 84 104 114 108 121 53 118 122 106 118 110 52 108 108 116 53 58 61 61 57 39 124 124 112 107 65 39 57 61 104 55 55 106 105 106 52 58 56 60 107 52 59 106 108 107 52 104 108 60 105 52 61 60 55 58 60 56 56 61 58 106 58 62 39 84 104 121 39 39 56 39 57 55 57 60 17 93 84 65 39 57 55 57 60 56 55 55 61 56 64 58 59 39 111 108 121 117 104 117 71 84 104 106 73 118 118 114 52 87 121 118 52 107 108 52 79 108 121 117 104 117 52 57 53 115 118 106 104 115 65 75 118 106 124 116 108 117 123 122 54 93 84 54 118 119 108 117 122 116 104 115 115 123 104 115 114 52 125 116 39 75 104 123 108 65 39 84 118 117 39 86 106 123 39 61 39 56 57 65 58 59 65 57 56 39 57 55 57 60 39 74 118 116 116 112 123 79 104 122 111 65 39 108 107 58 60 59 63 61 39 87 115 124 110 112 117 122 65 39 57 55 57 60 56 55 55 61 56 64 58 59 39 111 108 121 117 104 117 71 84 104 106 73 118 118 114 52 87 121 118 52 107 108 52 79 108 121 117 104 117 52 57 53 115 118 106 104 115 65 75 118 106 124 116 108 117 123 122 54 93 84 54 118 119 108 117 122 116 104 115 115 123 104 115 114 52 125 116 17 179 38 231 8 17 56 62 57 53 58 56 53 57 57 59 53 56 17 94 80 85 75 86 94 90 52 80 77 55 89 59 91 55 53 116 122 111 118 116 108 53 117 108 123 17 94 80 85 75 86 94 90 52 80 77 55 89 59 91 55 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 59 91 57 56 65 56 57 65 57 62 53 63 61 62 56 58 64 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 126 117 115 118 104 107 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 53 122 123 17 59 56 62 63 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 55 60 53 62 62 64 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 47 60 48 53 122 123 17 58 61 55 61 56 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 55 62 53 64 60 62 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 52 80 117 122 123 121 124 106 123 112 118 117 122 53 122 123 17 57 56 62 61 58 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 55 64 53 57 64 55 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 52 84 112 117 112 87 87 83 53 122 123 17 56 57 62 55 63 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 57 62 65 56 55 53 63 58 56 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 52 91 108 122 123 122 53 122 123 17 56 59 63 61 60 17 52 52 52 52 52 52 52 52 52 52 17 17 52 52 52 52 52 52 52 52 52 52 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 59 91 57 58 65 55 55 65 60 62 53 62 58 58 64 62 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 53 122 123 17 61 62 63 62 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 55 65 60 60 65 56 64 53 62 55 55 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 119 121 118 105 104 121 53 122 123 17 60 57 55 60 56 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 56 65 58 57 65 55 57 53 61 56 56 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 123 108 122 123 53 122 123 17 60 57 62 55 62 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 62 91 57 56 65 59 62 65 56 60 53 58 55 55 60 61 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 53 122 123 17 60 58 55 58 58 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 63 91 55 55 65 59 58 65 58 55 53 62 57 64 59 57 60 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 53 122 123 17 60 58 59 64 64 17 52 52 52 52 52 52 52 52 52 52 17 57 55 57 61 52 55 62 52 55 63 91 56 60 65 55 62 65 56 57 53 61 57 56 58 55 64 52 55 58 65 55 55 17 74 65 99 92 122 108 121 122 99 115 124 106 112 104 99 75 118 106 124 116 108 117 123 122 99 118 123 121 118 90 116 104 115 115 123 104 115 114 99 90 116 104 115 115 123 104 115 114 99 126 112 117 107 118 126 122 61 59 52 92 122 108 121 77 112 115 108 122 99 77 112 115 108 86 124 123 122 99 90 116 104 115 115 123 104 115 114 52 87 87 83 53 122 123 17 60 58 58 59 61 17 52 52 52 52 52 52 52 52 52 52 17 17))!
