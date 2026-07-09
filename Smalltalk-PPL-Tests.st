@@ -87,39 +87,57 @@ test05EvalLet
 	"self assert: (self evalAST: #(let (#x 1) #x)) equals: 1."
 	self assert: (self evalAST: (Let initBinds: #(#x 1) withBody:#(#x))) equals: 1.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 10:51:18 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 3:39:55 pm (UTC)'!
 test06EvalLetMultipleBindings
-	"(Let initBinds: #(#x 1) withBody:#(#x))"
-	"#(let (#x 2 #y 5) #y)"
+	
 	self assert: (self evalAST: (Let initBinds: (#(#x 2 #y 5)) withBody: #(#y))) equals: 5.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 3:07:13 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 3:40:58 pm (UTC)'!
 test07EvalDiscard
+	
+	
+	self assert: (self evalAST: (Let initBinds: #(#x 1) withBody: #(10 99))) equals: 99.! !
 
-	self assert: (self evalAST: #(let (#x 1) 10 99)) equals: 99.! !
-
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 7:00:09 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 5:32:23 pm (UTC)'!
 test08EvalFn
 	"identidad"
-	self assert: (self evalAST: #((fn (#x) #x) 42)) equals: 42.! !
+	
+	"self assert: (self evalAST: #((fn (#x) #x) 42)) equals: 42."
+	"self assert: (self evalAST: (Fn withParameters: #(#x) andBody: #(#x 42))) equals: 42."
+	self assert: 
+		(self evalAST: (CallFunction withFunction: (Fn withParameters: #(#x) andBody: #(#x))
+			withArguments: #(42))) 
+				equals: 42.
+	! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 11:21:49 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 7:29:51 pm (UTC)'!
 test09EvalClosure
-	| ast |
-	ast := #(let (#x 10) 
+	| function let1 let2 |
+	"ast := #(let (#x 10) 
 			#(let (#f #(fn (#y) (+ #x #y))) 
-				#(f 5))).
+				#(f 5)))."
+	function := (Fn withParameters: { #y } 
+				andBody: {CallFunction withFunction: #+ withArguments: { #x. #y }}).
 				
-	self assert: (self evalAST: ast) equals: 15.! !
+	let2 := Let initBinds: { #f. function} withBody: { CallFunction withFunction: #f withArguments: { 5 }}.
+	
+	let1 := Let initBinds: { #x. 10 }withBody: {let2}.
+	
+	self assert: (self evalAST: let1) equals: 15.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 11:24:11 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 6:52:53 pm (UTC)'!
 test10EvalHOF
-	| ast |
+	| ast function1 function2 function3 |
 	
 	ast := #(let (#apply #(fn (#f #val) (#f #val)))
 		#(#apply #(fn (#x) (* #x 2)) 21)).
+		
+	function1 := Fn withParameters: #(#f #val) andBody: #(#f #val).
+	function2 := CallFunction withFunction: #* withArguments: #(#x 2).
+	function3 := CallFunction withFunction: (Fn withParameters: #(x) andBody: function2) withArguments: #(21).
+	
 
-	self assert: (self evalAST: ast) equals: 42.
+	self assert: (self evalAST: (Let initBinds: ({#apply. function1}) withBody: ({#apply. function3}))) equals: 42.
 	
 	"
 	(let ((apply (lambda (f val) (f val))))
@@ -127,12 +145,15 @@ test10EvalHOF
 	"
 	! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 2:21:29 am (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 7:38:51 pm (UTC)'!
 test11EvalSample
 
-	| ast result env |
+	| ast result env distribution |
 	
-	ast := #(sample #(normal 0 1)).
+	"ast := #(sample #(normal 0 1))."
+	distribution := NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	ast := Sample withDistribution: distribution.
+	
 	
 	"parche temporal"
 	env := {#normal -> #normal } asDictionary.
@@ -148,12 +169,14 @@ test11EvalSample
 	self assert: result trace sampleValues size equals: 1.
 	self assert: (result trace sampleValues includesKey: #(#main)).! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 3:24:37 am (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 8:05:35 pm (UTC)'!
 test12EvalObserve
 	
-	| ast result env |
+	| ast result env distribution |
 	
-	ast := #(observe #(normal 0 1) 5).
+	"ast := #(observe #(normal 0 1) 5)."
+	distribution:= NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	ast := Observe withDistribution: distribution withObservedValue: 5.
 	
 	env := {#normal -> #normal } asDictionary.
 	

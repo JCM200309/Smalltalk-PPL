@@ -543,7 +543,7 @@ popValues: anIndex
 	
 	^ values! !
 
-!Machine methodsFor: 'runner' stamp: 'L.C 8/Jul/2026, 3:15:11 am (UTC)'!
+!Machine methodsFor: 'runner' stamp: 'jcm 9/Jul/2026, 7:28:57 pm (UTC)'!
 pushBody: aBody withEnvironment: anEnv andAddress: anAddress
 	
 	| n |
@@ -1204,39 +1204,57 @@ test05EvalLet
 	"self assert: (self evalAST: #(let (#x 1) #x)) equals: 1."
 	self assert: (self evalAST: (Let initBinds: #(#x 1) withBody:#(#x))) equals: 1.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 10:51:18 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 3:39:55 pm (UTC)'!
 test06EvalLetMultipleBindings
-	"(Let initBinds: #(#x 1) withBody:#(#x))"
-	"#(let (#x 2 #y 5) #y)"
+	
 	self assert: (self evalAST: (Let initBinds: (#(#x 2 #y 5)) withBody: #(#y))) equals: 5.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 3:07:13 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 3:40:58 pm (UTC)'!
 test07EvalDiscard
+	
+	
+	self assert: (self evalAST: (Let initBinds: #(#x 1) withBody: #(10 99))) equals: 99.! !
 
-	self assert: (self evalAST: #(let (#x 1) 10 99)) equals: 99.! !
-
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 7:00:09 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 5:32:23 pm (UTC)'!
 test08EvalFn
 	"identidad"
-	self assert: (self evalAST: #((fn (#x) #x) 42)) equals: 42.! !
+	
+	"self assert: (self evalAST: #((fn (#x) #x) 42)) equals: 42."
+	"self assert: (self evalAST: (Fn withParameters: #(#x) andBody: #(#x 42))) equals: 42."
+	self assert: 
+		(self evalAST: (CallFunction withFunction: (Fn withParameters: #(#x) andBody: #(#x))
+			withArguments: #(42))) 
+				equals: 42.
+	! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 11:21:49 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 7:29:51 pm (UTC)'!
 test09EvalClosure
-	| ast |
-	ast := #(let (#x 10) 
+	| function let1 let2 |
+	"ast := #(let (#x 10) 
 			#(let (#f #(fn (#y) (+ #x #y))) 
-				#(f 5))).
+				#(f 5)))."
+	function := (Fn withParameters: { #y } 
+				andBody: {CallFunction withFunction: #+ withArguments: { #x. #y }}).
 				
-	self assert: (self evalAST: ast) equals: 15.! !
+	let2 := Let initBinds: { #f. function} withBody: { CallFunction withFunction: #f withArguments: { 5 }}.
+	
+	let1 := Let initBinds: { #x. 10 }withBody: {let2}.
+	
+	self assert: (self evalAST: let1) equals: 15.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 11:24:11 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 6:52:53 pm (UTC)'!
 test10EvalHOF
-	| ast |
+	| ast function1 function2 function3 |
 	
 	ast := #(let (#apply #(fn (#f #val) (#f #val)))
 		#(#apply #(fn (#x) (* #x 2)) 21)).
+		
+	function1 := Fn withParameters: #(#f #val) andBody: #(#f #val).
+	function2 := CallFunction withFunction: #* withArguments: #(#x 2).
+	function3 := CallFunction withFunction: (Fn withParameters: #(x) andBody: function2) withArguments: #(21).
+	
 
-	self assert: (self evalAST: ast) equals: 42.
+	self assert: (self evalAST: (Let initBinds: ({#apply. function1}) withBody: ({#apply. function3}))) equals: 42.
 	
 	"
 	(let ((apply (lambda (f val) (f val))))
@@ -1244,12 +1262,15 @@ test10EvalHOF
 	"
 	! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 2:21:29 am (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 7:38:51 pm (UTC)'!
 test11EvalSample
 
-	| ast result env |
+	| ast result env distribution |
 	
-	ast := #(sample #(normal 0 1)).
+	"ast := #(sample #(normal 0 1))."
+	distribution := NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	ast := Sample withDistribution: distribution.
+	
 	
 	"parche temporal"
 	env := {#normal -> #normal } asDictionary.
@@ -1265,12 +1286,14 @@ test11EvalSample
 	self assert: result trace sampleValues size equals: 1.
 	self assert: (result trace sampleValues includesKey: #(#main)).! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 3:24:37 am (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 8:05:35 pm (UTC)'!
 test12EvalObserve
 	
-	| ast result env |
+	| ast result env distribution |
 	
-	ast := #(observe #(normal 0 1) 5).
+	"ast := #(observe #(normal 0 1) 5)."
+	distribution:= NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	ast := Observe withDistribution: distribution withObservedValue: 5.
 	
 	env := {#normal -> #normal } asDictionary.
 	
@@ -1418,11 +1441,10 @@ Instruction subclass: #Call
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Call methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 5:53:34 pm (UTC)'!
+!Call methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 7:50:55 pm (UTC)'!
 executeOn: aMachine runner: aRunner
 	
 	| arguments operator |
-	
 	arguments := aMachine popValues: count.
 	operator := aMachine popValue.
 	
@@ -1453,6 +1475,56 @@ expecting: aCount at: anAddress
 	^ self new initializeExpecting: aCount at: anAddress! !
 
 
+!classDefinition: #CallFunction category: #'Smalltalk-PPL-Instructions'!
+Instruction subclass: #CallFunction
+	instanceVariableNames: 'function arguments'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL-Instructions'!
+
+!CallFunction methodsFor: 'Instance Creation' stamp: 'jcm 9/Jul/2026, 5:33:54 pm (UTC)'!
+evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: anAddress
+
+	| count |
+
+	count := arguments size.
+
+	aMachine pushControl: (Call expecting: count at: anAddress).
+
+	arguments size to: 1 by: -1 do: [ :index |
+		aMachine pushControl: (Eval
+			expression: (arguments at: index)
+			withEnvironment: anEnvironment
+			andAddress: (anAddress , {index - 1}))
+	].
+
+	aMachine pushControl: (Eval
+		expression: function
+		withEnvironment: anEnvironment
+		andAddress: (anAddress , {#operator})).
+
+	^ self! !
+
+!CallFunction methodsFor: 'Instance Creation' stamp: 'jcm 9/Jul/2026, 5:32:15 pm (UTC)'!
+withFunction: aFunction withArguments: aCollectionOfArguments
+	
+	function  := aFunction.
+	arguments  := aCollectionOfArguments ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CallFunction class' category: #'Smalltalk-PPL-Instructions'!
+CallFunction class
+	instanceVariableNames: ''!
+
+!CallFunction class methodsFor: 'instance creation' stamp: 'jcm 9/Jul/2026, 5:31:38 pm (UTC)'!
+withFunction: aFunction withArguments: aCollectionOfArguments
+
+	^self new withFunction: aFunction withArguments: aCollectionOfArguments
+	
+		! !
+
+
 !classDefinition: #Discard category: #'Smalltalk-PPL-Instructions'!
 Instruction subclass: #Discard
 	instanceVariableNames: ''
@@ -1474,12 +1546,10 @@ Instruction subclass: #Eval
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
 
-!Eval methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 10:03:07 pm (UTC)'!
+!Eval methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 7:59:41 pm (UTC)'!
 executeOn: aMachine runner: aRunner
-
 	
-
-	
+	"| binds body count head parameters |"
 	expression isSymbol ifTrue: [	
 		(environment includesKey: expression) 
 			ifTrue: [aMachine pushValue: (environment at: expression)] 
@@ -1497,8 +1567,8 @@ executeOn: aMachine runner: aRunner
 	
 	expression evalWithMachine: aMachine withEnvironment: environment  andAddress: address.
 	^self
-	"
 	
+	"
 	head := expression first.
 	
 	head == #if ifTrue: [
@@ -1561,7 +1631,7 @@ executeOn: aMachine runner: aRunner
 		expression: expression first
 		withEnvironment: environment
 		andAddress: (address , {#fn})).
-	^ self"
+	^ self "
 	! !
 
 !Eval methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 2:01:48 pm (UTC)'!
@@ -1583,6 +1653,44 @@ Eval class
 expression: anExpression withEnvironment: anEnvironment andAddress: anAddress
 	
 	^ self new initExpression: anExpression withEnvironment: anEnvironment andAddress: anAddress.! !
+
+
+!classDefinition: #Fn category: #'Smalltalk-PPL-Instructions'!
+Instruction subclass: #Fn
+	instanceVariableNames: 'parameters body'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Smalltalk-PPL-Instructions'!
+
+!Fn methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 3:46:26 pm (UTC)'!
+evalWithMachine: aMachine withEnvironment: anEnvironment  andAddress: anAddress
+
+
+	aMachine pushValue: (Closure withParameters: parameters andBody: body andEnvironment: anEnvironment)
+	
+	! !
+
+
+!Fn methodsFor: 'Instance Creation' stamp: 'jcm 9/Jul/2026, 3:51:24 pm (UTC)'!
+withParameters: aCollectionOfParamters andBody: aBodyFunction
+	
+	parameters := aCollectionOfParamters.
+	body := aBodyFunction.
+	
+	^self ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Fn class' category: #'Smalltalk-PPL-Instructions'!
+Fn class
+	instanceVariableNames: ''!
+
+!Fn class methodsFor: 'instance creation' stamp: 'jcm 9/Jul/2026, 3:50:40 pm (UTC)'!
+withParameters: aCollectionOfParamaters andBody: aBodyFunction
+
+	^self new withParameters: aCollectionOfParamaters andBody: aBodyFunction
+	
+		! !
 
 
 !classDefinition: #If category: #'Smalltalk-PPL-Instructions'!
@@ -1756,10 +1864,26 @@ initBinds: aBindCollection withBody: aBody
 
 !classDefinition: #Observe category: #'Smalltalk-PPL-Instructions'!
 Instruction subclass: #Observe
-	instanceVariableNames: ''
+	instanceVariableNames: 'distribution observedValue'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
+
+!Observe methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 8:04:23 pm (UTC)'!
+evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: anAddress
+
+	address := anAddress.
+	
+	aMachine pushControl: (Observe withAddress: address).
+		aMachine pushControl: (Eval 
+			expression: (observedValue) 
+			withEnvironment: anEnvironment 
+			andAddress: (address , {#v})).
+		aMachine pushControl: (Eval 
+			expression: (distribution) 
+			withEnvironment: anEnvironment 
+			andAddress: (address , {#d})).
+		^ self! !
 
 !Observe methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 11:57:58 pm (UTC)'!
 executeOn: aMachine runner: aRunner
@@ -1775,24 +1899,55 @@ initializeWithAddress: anAddress
 
 	address := anAddress! !
 
+
+!Observe methodsFor: 'Instance Creation' stamp: 'jcm 9/Jul/2026, 8:01:52 pm (UTC)'!
+withDistribution: aDistribution withObservedValue: anObservedValue
+	
+	distribution := aDistribution.
+	observedValue:= anObservedValue .
+	
+	^self
+	! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Observe class' category: #'Smalltalk-PPL-Instructions'!
 Observe class
-	instanceVariableNames: ''!
+	instanceVariableNames: 'distribution observedValue'!
 
 !Observe class methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 2:08:59 am (UTC)'!
 withAddress: anAddress
 
 	^ self new initializeWithAddress: anAddress! !
 
+
+!Observe class methodsFor: 'instance creation' stamp: 'jcm 9/Jul/2026, 8:01:08 pm (UTC)'!
+withDistribution: aDistribution withObservedValue: anObservedValue
+
+	^self new withDistribution: aDistribution withObservedValue: anObservedValue
+	
+	
+	! !
+
 
 !classDefinition: #Sample category: #'Smalltalk-PPL-Instructions'!
 Instruction subclass: #Sample
-	instanceVariableNames: ''
+	instanceVariableNames: 'distribution'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Smalltalk-PPL-Instructions'!
+
+!Sample methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 7:49:07 pm (UTC)'!
+evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: anAddress
+
+	address := anAddress.
+
+	aMachine pushControl: self.
+	aMachine pushControl: (Eval 
+			expression: distribution
+			withEnvironment: anEnvironment 
+			andAddress: (address,{#d})).
+	^ self! !
 
 !Sample methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 11:58:09 pm (UTC)'!
 executeOn: aMachine runner: aRunner
@@ -1804,6 +1959,15 @@ initializeWithAddress: anAddress
 
 	address := anAddress! !
 
+
+!Sample methodsFor: 'Instance Creation' stamp: 'jcm 9/Jul/2026, 7:40:27 pm (UTC)'!
+withDistribution: aDistribution 
+	
+	
+	distribution := aDistribution .
+	
+	^self! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Sample class' category: #'Smalltalk-PPL-Instructions'!
@@ -1814,6 +1978,13 @@ Sample class
 withAddress: anAddress
 
 	^ self new initializeWithAddress: anAddress! !
+
+
+!Sample class methodsFor: 'instance creation' stamp: 'jcm 9/Jul/2026, 7:39:20 pm (UTC)'!
+withDistribution: aDistribution 
+
+	^self new withDistribution: aDistribution 
+	! !
 !classDefinition: #Distribution category: #'Smalltalk-PPL-MiniPPL'!
 Object subclass: #Distribution
 	instanceVariableNames: ''
