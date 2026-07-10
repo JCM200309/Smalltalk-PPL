@@ -1,6 +1,6 @@
-'From Cuis7.5 [latest update: #7641] on 10 July 2026 at 3:58:12 pm'!
+'From Cuis7.5 [latest update: #7641] on 10 July 2026 at 4:48:23 pm'!
 'Description '!
-!provides: 'SmalltalkPPL' 1 3!
+!provides: 'SmalltalkPPL' 1 4!
 SystemOrganization addCategory: #'SmalltalkPPL-Evaluation'!
 SystemOrganization addCategory: #'SmalltalkPPL-Tests'!
 SystemOrganization addCategory: #'SmalltalkPPL-Instructions'!
@@ -283,6 +283,16 @@ Object subclass: #Distribution
 Distribution class
 	instanceVariableNames: ''!
 
+!classDefinition: #BernoulliDistribution category: #'SmalltalkPPL-MiniPPL'!
+Distribution subclass: #BernoulliDistribution
+	instanceVariableNames: 'randomGenerator probabil'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SmalltalkPPL-MiniPPL'!
+!classDefinition: 'BernoulliDistribution class' category: #'SmalltalkPPL-MiniPPL'!
+BernoulliDistribution class
+	instanceVariableNames: ''!
+
 !classDefinition: #NormalDistribution category: #'SmalltalkPPL-MiniPPL'!
 Distribution subclass: #NormalDistribution
 	instanceVariableNames: 'mean standardDeviation randomGenerator'
@@ -311,6 +321,16 @@ Primitive subclass: #AddPrimitive
 	category: 'SmalltalkPPL-MiniPPL'!
 !classDefinition: 'AddPrimitive class' category: #'SmalltalkPPL-MiniPPL'!
 AddPrimitive class
+	instanceVariableNames: ''!
+
+!classDefinition: #BernoulliPrimitive category: #'SmalltalkPPL-MiniPPL'!
+Primitive subclass: #BernoulliPrimitive
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SmalltalkPPL-MiniPPL'!
+!classDefinition: 'BernoulliPrimitive class' category: #'SmalltalkPPL-MiniPPL'!
+BernoulliPrimitive class
 	instanceVariableNames: ''!
 
 !classDefinition: #DividePrimitive category: #'SmalltalkPPL-MiniPPL'!
@@ -1428,6 +1448,27 @@ logarithmicProbabilityWith: aValue
 sample
 	^self subclassResponsibility! !
 
+!BernoulliDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:28:49'!
+initializeWithProbability: aProbability randomGenerator: aRandomNumberGenerator
+
+	probabil := aProbability.
+	randomGenerator := aRandomNumberGenerator.
+	
+	^self.! !
+
+!BernoulliDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:36:32'!
+sample
+	
+	^randomGenerator next < probabil! !
+
+!BernoulliDistribution class methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:31:05'!
+withProbability: aProbability randomGenerator: aRandomNumberGenerator
+
+	(aProbability between: 0 and: 1) ifFalse: [self error: 'Probability must exists in [0,1]'].
+	
+	^self new initializeWithProbability: aProbability	randomGenerator: aRandomNumberGenerator
+! !
+
 !NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:26:48 pm (UTC)'!
 initializeWithMean: aMeanValue standardDeviation: aStandardDeviation randomGenerator: aRandomNumberGenerator
 	
@@ -1504,6 +1545,14 @@ applyArguments: arguments onMachine: aMachine atAddress: address
 	result := (arguments at: 1) + (arguments at: 2).
 	aMachine pushValue: result.! !
 
+!BernoulliPrimitive methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:32:58'!
+applyArguments: arguments onMachine: aMachine atAddress: address
+
+	| distribution |
+	distribution := BernoulliDistribution withProbability: (arguments at: 1) randomGenerator: aMachine randomGenerator.
+	
+	aMachine pushValue: distribution.! !
+
 !DividePrimitive methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 2:16:21 am (UTC)'!
 applyArguments: arguments onMachine: aMachine atAddress: address
 
@@ -1564,7 +1613,7 @@ for: aCollection
 
 	^self new for: aCollection! !
 
-!AlgorithmRunner methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 2:19:01 am (UTC)'!
+!AlgorithmRunner methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:33:25'!
 initialEnvironment
 	| env |
 	env := Dictionary new.
@@ -1574,6 +1623,7 @@ initialEnvironment
 	env at: #/ put: DividePrimitive new.
 	env at: #= put: EqualPrimitive new.
 	env at: #normal put: NormalPrimitive new.
+	env at: #bernoulli put: BernoulliPrimitive new.
 	^env! !
 
 !AlgorithmRunner methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:48:03 pm (UTC)'!
@@ -2419,6 +2469,46 @@ testConjSSMH
 	posteriori := chain sum / chain size.
 	
 	self assert: (posteriori between: 0.9 and: 1.4).! !
+
+!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:42:38'!
+testGeometric
+
+	| geomFn program posteriori results rng bernoulli |
+	
+	rng := Random seed: 1.
+	bernoulli := BernoulliDistribution withProbability: 0.3 randomGenerator: rng.
+		
+	geomFn := Fn withParameters: #(#geom) andBody: {
+		If condition: (Sample withDistribution: bernoulli)
+			then: 0 else: (CallFunction withFunction: #+ withArguments: {
+				1. CallFunction withFunction: #geom withArguments: #(#geom)})}.
+	
+	program := Let 
+		initBinds: {#geom . geomFn} 
+		withBody: {CallFunction withFunction: #geom withArguments: #(#geom)}.
+		
+	results := LikelihoodWeighting program: program rng: rng for: 200000.
+	
+	posteriori := results value sum / results value size.
+	
+	self assert: (posteriori between: 2.25 and: 2.4).! !
+
+!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:14:50'!
+testShift
+
+	| program results |
+	
+	program := Let initBinds: {
+		#makeShift . Fn withParameters: #(#mu) andBody: { 
+			Fn withParameters: #(#x) andBody: { 
+			CallFunction withFunction: #+ withArguments: #(#x #mu)}}.
+			#f . CallFunction withFunction: #makeShift withArguments: #(10)}
+		withBody: {
+			CallFunction withFunction: #f withArguments: #(3)}.
+
+	results := LikelihoodWeighting program: program rng: (Random seed: 0) for: 1.
+	
+	self assert: results value first equals: 13.! !
 
 !Object methodsFor: '*SmalltalkPPL-Evaluation' stamp: 'L.C 10/Jul/2026, 2:42:53 am (UTC)'!
 evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: anAddress
