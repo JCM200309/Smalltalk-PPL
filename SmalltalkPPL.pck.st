@@ -1,6 +1,6 @@
-'From Cuis7.9 [latest update: #8037] on 10 July 2026 at 3:13:26 pm'!
+'From Cuis7.9 [latest update: #8037] on 10 July 2026 at 3:28:42 pm'!
 'Description '!
-!provides: 'SmalltalkPPL' 1 1!
+!provides: 'SmalltalkPPL' 1 2!
 SystemOrganization addCategory: #'SmalltalkPPL-Evaluation'!
 SystemOrganization addCategory: #'SmalltalkPPL-Tests'!
 SystemOrganization addCategory: #'SmalltalkPPL-Instructions'!
@@ -534,14 +534,13 @@ program: aProgram rng:aRandomNumberGenerator for: aNumberOfSteps
 	
 	! !
 
-!SequentialMonteCarlo methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:04:00 pm (UTC)'!
+!SequentialMonteCarlo methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:25:48 pm (UTC)'!
 program: aProgram rng:aRandomNumberGenerators for: aNumberOfSteps
 
 	| particles |
 	particles := OrderedCollection new.
 	
-	1 to: aNumberOfSteps do:[
-		particles add: (Machine initialMachineWithProgram: aProgram withRng: aRandomNumberGenerators )
+	1 to: aNumberOfSteps do:[:i | particles add: (Machine initialMachineWithProgram: aProgram withRng: aRandomNumberGenerators )
 		].
 	
 	^SMCRunner runWithProgram: aProgram withRng: aRandomNumberGenerators  withParticles: particles.! !
@@ -717,14 +716,14 @@ initMachineWithControlStack: aControlStack withValueStack: aValueStack withEnvVa
 			
 	! !
 
-!Machine methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 1:43:10 pm (UTC)'!
+!Machine methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:20:38 pm (UTC)'!
 forkWithRng: aRandomNumberGenerator
 	
 	| rng copiedControlStack copiedEnvironment copiedValueStack |
 	
 	rng := randomGenerator isNil 
-			ifTrue: [aRandomNumberGenerator]
-			ifFalse: [randomGenerator].
+			ifTrue: [randomGenerator ]
+			ifFalse: [aRandomNumberGenerator ].
 
 	copiedControlStack := controlStack ifNotNil: [ controlStack copy ].
 	copiedValueStack := valueStack ifNotNil: [ valueStack copy ].
@@ -1703,7 +1702,7 @@ resampleFromObserveMessages: aCollectionOfObservedMessages
 
 	! !
 
-!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 4:30:29 pm (UTC)'!
+!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:17:33 pm (UTC)'!
 run
 
 	| messages |
@@ -1802,6 +1801,11 @@ observeWithAddress: anAddress withDistribution: aDistribution withObservedValue:
 returnWithAddress: anAddress withLogIncrement: logIncrement withObservedValue: anObservedValue.
 	
 	^SMCObserve withAddress: anAddress forParticle: machine withLogIncrement: logIncrement! !
+
+!SMCRunner class methodsFor: 'instance creation' stamp: 'jcm 10/Jul/2026, 6:26:52 pm (UTC)'!
+runWithProgram: aProgram withRng: aCollectionOfRandomNumberGenerators withParticles: aCollectionOfParticles
+	
+	^self new runWithProgram: aProgram withRng: aCollectionOfRandomNumberGenerators withParticles: aCollectionOfParticles! !
 
 !SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/Jul/2026, 11:42:52 pm (UTC)'!
 doneWithValue: aReturnValue
@@ -2222,7 +2226,7 @@ test04SampleReturnsSampledValue
     self assert: sampled isFloat.
     self should: [ particle popValue] raise: Error.! !
 
-!SMCTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:11:32 pm (UTC)'!
+!SMCTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:20:59 pm (UTC)'!
 test05ResamplingCopiesSelectedAncestors
 
     | p1 p2 p3 messages rng particles |
@@ -2253,7 +2257,7 @@ test05ResamplingCopiesSelectedAncestors
         self deny: copiedParticle == p2.
         self deny: copiedParticle == p3.
         self assert: copiedParticle class equals: Machine.
-       self halt. self assert: copiedParticle randomGenerator equals: rng.
+	 self assert: copiedParticle randomGenerator equals: rng.
         self assert: (#(10 11 12) includes: copiedParticle popValue)].! !
 
 !SSMHTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:29:23 am (UTC)'!
@@ -2385,18 +2389,18 @@ testConjLW
 	
 	self assert: (posteriori between: 0.9 and: 1.4).! !
 
-!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 8:26:47 am (UTC)'!
+!MainTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:24:44 pm (UTC)'!
 testConjSMC
-	"| posteriori particles |
+	| posteriori particles |
 	
-	particles := SequentialMonteCarlo new 
-		program: originalProgramTest 
-		rng: Random new
-		for: 20000.
+	particles := SequentialMonteCarlo 
+		program: self genProgram 
+		rng: {Random new. Random new}
+		for: 2.
 	
 	posteriori := particles sum / particles size.
 	
-	self assert: (posteriori between: 0.9 and: 1.4)."! !
+	self assert: (posteriori between: 0.9 and: 1.4).! !
 
 !MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 10:34:14 am (UTC)'!
 testConjSSMH
