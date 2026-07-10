@@ -1,6 +1,6 @@
-'From Cuis7.9 [latest update: #8037] on 10 July 2026 at 3:28:42 pm'!
+'From Cuis7.5 [latest update: #7641] on 10 July 2026 at 3:58:12 pm'!
 'Description '!
-!provides: 'SmalltalkPPL' 1 2!
+!provides: 'SmalltalkPPL' 1 3!
 SystemOrganization addCategory: #'SmalltalkPPL-Evaluation'!
 SystemOrganization addCategory: #'SmalltalkPPL-Tests'!
 SystemOrganization addCategory: #'SmalltalkPPL-Instructions'!
@@ -534,21 +534,25 @@ program: aProgram rng:aRandomNumberGenerator for: aNumberOfSteps
 	
 	! !
 
-!SequentialMonteCarlo methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:25:48 pm (UTC)'!
+!SequentialMonteCarlo methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 15:51:16'!
 program: aProgram rng:aRandomNumberGenerators for: aNumberOfSteps
 
-	| particles |
-	particles := OrderedCollection new.
-	
-	1 to: aNumberOfSteps do:[:i | particles add: (Machine initialMachineWithProgram: aProgram withRng: aRandomNumberGenerators )
-		].
+	| particles program randomGenerator |
+	program := aProgram.
+	randomGenerator := aRandomNumberGenerators.
+	particles := Array new: aNumberOfSteps.
+
+	1 to: aNumberOfSteps do: [:i | 
+		| oneRng | 
+		oneRng := aRandomNumberGenerators at: i.
+		particles at: i put: (Machine initialMachineWithProgram: aProgram withRng: oneRng)].
 	
 	^SMCRunner runWithProgram: aProgram withRng: aRandomNumberGenerators  withParticles: particles.! !
 
-!SequentialMonteCarlo class methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:06:05 pm (UTC)'!
+!SequentialMonteCarlo class methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 15:52:50'!
 checkSizeOfRng: aRandomNumberGenerators EqualsSteps: aNumberOfSteps.
 
-	aRandomNumberGenerators size == aNumberOfSteps  ifFalse:[Error signal: 'The number of steps must be equal the number of the Random Number Generators']! !
+	aRandomNumberGenerators size == aNumberOfSteps ifFalse: [Error signal: 'The number of steps must be equal the number of the Random Number Generators']! !
 
 !SequentialMonteCarlo class methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:05:00 pm (UTC)'!
 program: aProgram rng:aRandomNumberGenerators for: aNumberOfSteps
@@ -2389,16 +2393,16 @@ testConjLW
 	
 	self assert: (posteriori between: 0.9 and: 1.4).! !
 
-!MainTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:24:44 pm (UTC)'!
+!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 15:56:08'!
 testConjSMC
 	| posteriori particles |
 	
 	particles := SequentialMonteCarlo 
 		program: self genProgram 
-		rng: {Random new. Random new}
-		for: 2.
+		rng: ((1 to: 5000) collect: [ :each | Random new ])
+		for: 5000.
 	
-	posteriori := particles sum / particles size.
+	posteriori := particles values sum / particles values size.
 	
 	self assert: (posteriori between: 0.9 and: 1.4).! !
 
