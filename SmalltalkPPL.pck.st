@@ -1,6 +1,6 @@
-'From Cuis7.5 [latest update: #7641] on 10 July 2026 at 4:48:23 pm'!
+'From Cuis7.5 [latest update: #7641] on 11 July 2026 at 11:33:18 am'!
 'Description '!
-!provides: 'SmalltalkPPL' 1 4!
+!provides: 'SmalltalkPPL' 1 1!
 SystemOrganization addCategory: #'SmalltalkPPL-Evaluation'!
 SystemOrganization addCategory: #'SmalltalkPPL-Tests'!
 SystemOrganization addCategory: #'SmalltalkPPL-Instructions'!
@@ -11,7 +11,18 @@ SystemOrganization addCategory: #'SmalltalkPPL-Runner'!
 SystemOrganization addCategory: #'SmalltalkPPL-ExecutionState'!
 SystemOrganization addCategory: #'SmalltalkPPL-Kernel-SSMH'!
 SystemOrganization addCategory: #'SmalltalkPPL-Kernel-SMC'!
+SystemOrganization addCategory: #'SmalltalkPPL-Exceptions'!
 
+
+!classDefinition: #PPLError category: #'SmalltalkPPL-Exceptions'!
+SystemOrganizer subclass: #PPLError
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SmalltalkPPL-Exceptions'!
+!classDefinition: 'PPLError class' category: #'SmalltalkPPL-Exceptions'!
+PPLError class
+	instanceVariableNames: ''!
 
 !classDefinition: #ImportanceSamplingAlgorithms category: #'SmalltalkPPL-Algorithm'!
 Object subclass: #ImportanceSamplingAlgorithms
@@ -53,9 +64,29 @@ Object subclass: #SingleSiteMetropolisHastings
 SingleSiteMetropolisHastings class
 	instanceVariableNames: ''!
 
+!classDefinition: #AddressFactory category: #'SmalltalkPPL-Core'!
+Object subclass: #AddressFactory
+	instanceVariableNames: 'path'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SmalltalkPPL-Core'!
+!classDefinition: 'AddressFactory class' category: #'SmalltalkPPL-Core'!
+AddressFactory class
+	instanceVariableNames: ''!
+
+!classDefinition: #Environment category: #'SmalltalkPPL-Core'!
+Object subclass: #Environment
+	instanceVariableNames: 'bindings parent'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SmalltalkPPL-Core'!
+!classDefinition: 'Environment class' category: #'SmalltalkPPL-Core'!
+Environment class
+	instanceVariableNames: ''!
+
 !classDefinition: #Machine category: #'SmalltalkPPL-Core'!
 Object subclass: #Machine
-	instanceVariableNames: 'controlStack valueStack envVar randomGenerator logWeights callCounter'
+	instanceVariableNames: 'controlStack valueStack environment randomGenerator logWeight callCounter'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'SmalltalkPPL-Core'!
@@ -75,7 +106,7 @@ Signaling class
 
 !classDefinition: #AlgorithmRuns category: #'SmalltalkPPL-ExecutionState'!
 Object subclass: #AlgorithmRuns
-	instanceVariableNames: 'value'
+	instanceVariableNames: 'values'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'SmalltalkPPL-ExecutionState'!
@@ -95,7 +126,7 @@ LWRun class
 
 !classDefinition: #SMCRun category: #'SmalltalkPPL-ExecutionState'!
 AlgorithmRuns subclass: #SMCRun
-	instanceVariableNames: 'values'
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'SmalltalkPPL-ExecutionState'!
@@ -285,7 +316,7 @@ Distribution class
 
 !classDefinition: #BernoulliDistribution category: #'SmalltalkPPL-MiniPPL'!
 Distribution subclass: #BernoulliDistribution
-	instanceVariableNames: 'randomGenerator probabil'
+	instanceVariableNames: 'randomGenerator probability'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'SmalltalkPPL-MiniPPL'!
@@ -514,28 +545,31 @@ MainTest class
 	instanceVariableNames: ''!
 
 
+!PPLError commentStamp: '<historical>' prior: 0!
+Habria que implementar las excepciones con subclass de PPLError signal: 'blabla'!
+
 !SingleSiteProposal commentStamp: '<historical>' prior: 0!
 Method Object!
 
-!ImportanceSamplingAlgorithms methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 5:41:53 pm (UTC)'!
+!ImportanceSamplingAlgorithms methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:03:31'!
 program: aProgram rng: aRandomNumberGenerator for: aNumberOfSteps
 
 	self subclassResponsibility! !
 
-!LikelihoodWeighting methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:10:13 pm (UTC)'!
+!LikelihoodWeighting methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:57:08'!
 program: aProgram rng:aRandomNumberGenerator for: aNumberOfSteps
 
 	| runs values log_w normalized |
 	runs := OrderedCollection new.
 	
-	1 to: aNumberOfSteps do: [:i | runs add: (LWRunner runWithProgram: aProgram withRng: aRandomNumberGenerator)].
+	1 to: aNumberOfSteps do: [:i | runs add: (LWRunner runWithProgram: aProgram randomGenerator: aRandomNumberGenerator)].
 	
 	values := runs collect: [ :r | r value asFloat].
 	log_w := runs collect: [ :r | r logWeights].
 	
 	normalized := SoftMax for: log_w.
 	
-	^LWRun withLogW: normalized withValue: values! !
+	^LWRun withLogWeight: normalized value: values! !
 
 !LikelihoodWeighting class methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 7:00:13 pm (UTC)'!
 checkPositiveNumberOfSteps: aNumberOfSteps
@@ -554,7 +588,7 @@ program: aProgram rng:aRandomNumberGenerator for: aNumberOfSteps
 	
 	! !
 
-!SequentialMonteCarlo methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 15:51:16'!
+!SequentialMonteCarlo methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:49:07'!
 program: aProgram rng:aRandomNumberGenerators for: aNumberOfSteps
 
 	| particles program randomGenerator |
@@ -565,7 +599,7 @@ program: aProgram rng:aRandomNumberGenerators for: aNumberOfSteps
 	1 to: aNumberOfSteps do: [:i | 
 		| oneRng | 
 		oneRng := aRandomNumberGenerators at: i.
-		particles at: i put: (Machine initialMachineWithProgram: aProgram withRng: oneRng)].
+		particles at: i put: (Machine initialMachineWithProgram: aProgram randomGenerator: oneRng)].
 	
 	^SMCRunner runWithProgram: aProgram withRng: aRandomNumberGenerators  withParticles: particles.! !
 
@@ -581,7 +615,7 @@ program: aProgram rng:aRandomNumberGenerators for: aNumberOfSteps
 	
 	^self new program: aProgram rng:aRandomNumberGenerators for: aNumberOfSteps! !
 
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 1:55:44 am (UTC)'!
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:32:44'!
 checkAcceptionOf: aNewRunOfSSMH comparingWith: anOldRunOfSSMH with: aRandomNumberGenerator with: anA0
 	
 	| acceptanceRatio proposedTrace oldTrace proposal |
@@ -589,7 +623,7 @@ checkAcceptionOf: aNewRunOfSSMH comparingWith: anOldRunOfSSMH with: aRandomNumbe
 	proposedTrace := aNewRunOfSSMH trace.
 	oldTrace := anOldRunOfSSMH trace.
 	
-	proposal := SingleSiteProposal from: oldTrace to: proposedTrace at: anA0.
+	proposal := SingleSiteProposal withCurrentTrace: oldTrace proposedTrace: proposedTrace atAddress: anA0.
 	acceptanceRatio := proposal logAlpha.
 
 	((aRandomNumberGenerator next ln) < acceptanceRatio) ifTrue: [ currentRun := aNewRunOfSSMH ].	
@@ -604,14 +638,14 @@ checkPassWarmup: aNumberOfWarmups Iterations: aNumberOfIteration
 
 ! !
 
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 11:14:52 am (UTC)'!
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:51:58'!
 initialTraceOfProgram: aProgram withRng: aRandomNumberGenerator
 
-	currentRun := runner run: aProgram withRng: aRandomNumberGenerator.
+	currentRun := runner run: aProgram withRandomGenerator: aRandomNumberGenerator.
 
 ! !
 
-!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 2:49:46 pm (UTC)'!
+!SingleSiteMetropolisHastings methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:51:17'!
 initializeProgram: aProgram rng:aRandomNumberGenerator steps: aNumberOfSteps warmup: aNumberOfWarmups
 
 	| newRun a0 |
@@ -624,9 +658,9 @@ initializeProgram: aProgram rng:aRandomNumberGenerator steps: aNumberOfSteps war
 		a0 := currentRun trace randomSampleAdressUsing: aRandomNumberGenerator.
 		newRun := runner 
 			run: aProgram 
-			withRng: aRandomNumberGenerator 
+			withRandomGenerator: aRandomNumberGenerator 
 			redrawAddress: a0 
-			withCache: currentRun trace sampleValues.
+			cache: currentRun trace sampleValues.
 			
 		self checkAcceptionOf: newRun comparingWith: currentRun with: aRandomNumberGenerator with: a0.
 		self checkPassWarmup: aNumberOfWarmups Iterations: i].
@@ -649,14 +683,107 @@ program: aProgram rng: aRandomGenerator steps: aNumberOfSteps warmup: aNumberOfW
 	^self new initializeProgram: aProgram rng: aRandomGenerator steps: aNumberOfSteps warmup: aNumberOfWarmups.
 ! !
 
-!Machine methodsFor: 'Setters' stamp: 'L.C 10/Jul/2026, 8:24:16 am (UTC)'!
+!AddressFactory methodsFor: 'getters' stamp: 'L.C 7/11/2026 10:45:55'!
+asAddress
+
+	^self! !
+
+!AddressFactory methodsFor: 'getters' stamp: 'L.C 7/11/2026 10:08:53'!
+path
+	
+	^path! !
+
+!AddressFactory methodsFor: 'comparing' stamp: 'L.C 7/11/2026 10:11:22'!
+= anotherAddress
+
+	(anotherAddress isKindOf: self class) ifFalse: [^false].
+	
+	^path = anotherAddress path! !
+
+!AddressFactory methodsFor: 'comparing' stamp: 'L.C 7/11/2026 10:11:54'!
+hash
+
+	^path hash! !
+
+!AddressFactory methodsFor: 'operations' stamp: 'L.C 7/11/2026 10:13:17'!
+/ aTag
+
+	^self class withPath: (path copyWith: aTag)! !
+
+!AddressFactory methodsFor: 'initialization' stamp: 'L.C 7/11/2026 10:08:17'!
+initializeWithPath: anArray
+
+	path := anArray.! !
+
+!AddressFactory class methodsFor: 'instance creation' stamp: 'L.C 7/11/2026 10:12:48'!
+root
+
+	^self withPath: #()! !
+
+!AddressFactory class methodsFor: 'instance creation' stamp: 'L.C 7/11/2026 10:12:29'!
+withPath: anArray
+
+	^self new initializeWithPath: anArray! !
+
+!Environment methodsFor: 'cloning' stamp: 'L.C 7/11/2026 11:25:17'!
+copy
+	
+	^self class newWithParent: self! !
+
+!Environment methodsFor: 'testings' stamp: 'L.C 7/11/2026 11:25:00'!
+at: aKey
+
+	^bindings at: aKey ifAbsent: [
+		parent ifNil: [PPLError signal: aKey asString ].
+		parent at: aKey]! !
+
+!Environment methodsFor: 'testings' stamp: 'L.C 7/11/2026 11:24:09'!
+at: aKey put: aValue
+
+	bindings at: aKey put: aValue! !
+
+!Environment methodsFor: 'testings' stamp: 'L.C 7/11/2026 11:23:41'!
+includesKey: aKey
+
+	(bindings includesKey: aKey) ifTrue: [^true].
+	parent ifNil: [^false].
+	
+	^parent includesKey: aKey! !
+
+!Environment methodsFor: 'initialization' stamp: 'L.C 7/11/2026 11:21:28'!
+initializeWithParent: anEnvironment
+
+	bindings := Dictionary new.
+	parent := anEnvironment.
+	
+	^self! !
+
+!Environment class methodsFor: 'instance creation' stamp: 'L.C 7/11/2026 11:22:13'!
+newWithParent: anEnvironment
+
+	^self new initializeWithParent: anEnvironment! !
+
+!Environment class methodsFor: 'instance creation' stamp: 'L.C 7/11/2026 11:22:31'!
+root
+
+	^self new initializeWithParent: nil! !
+
+!Machine methodsFor: 'setters' stamp: 'L.C 7/11/2026 09:45:40'!
 incrementLogW: aValueOfLogWToSum
 
-	logWeights := logWeights + aValueOfLogWToSum.! !
+	logWeight := logWeight + aValueOfLogWToSum.! !
 
-!Machine methodsFor: 'Setters' stamp: 'L.C 10/Jul/2026, 12:23:58 pm (UTC)'!
+!Machine methodsFor: 'setters' stamp: 'L.C 10/Jul/2026, 12:23:58 pm (UTC)'!
 randomGenerator
 	^randomGenerator! !
+
+!Machine methodsFor: 'runner' stamp: 'L.C 7/11/2026 10:15:18'!
+nextAddressFor: anPreAddress
+
+	| count |
+	count := callCounter at: anPreAddress ifAbsent: [0].
+	callCounter at: anPreAddress put: count+1.
+	^anPreAddress / count! !
 
 !Machine methodsFor: 'runner' stamp: 'L.C 6/Jul/2026, 1:31:17 pm (UTC)'!
 popValue
@@ -673,18 +800,18 @@ popValues: anIndex
 	
 	^ values! !
 
-!Machine methodsFor: 'runner' stamp: 'jcm 9/Jul/2026, 7:28:57 pm (UTC)'!
-pushBody: aBody withEnvironment: anEnv andAddress: anAddress
+!Machine methodsFor: 'runner' stamp: 'L.C 7/11/2026 10:22:03'!
+pushBody: aBody withEnvironment: anEnvironment address: anAddress
 	
 	| n |
 	n := aBody size.
 	n = 0 ifTrue: [^self].
 	
-	self pushControl: (Eval expression: (aBody at: n) withEnvironment: anEnv andAddress: (anAddress , {n})).
+	self pushControl: (Eval expression: (aBody at: n) withEnvironment: anEnvironment andAddress: (anAddress / n)).
 	
 	n-1 to: 1 by: -1 do: [ :index | 
 		self pushControl: Discard new.
-		self pushControl: (Eval expression: (aBody at: index) withEnvironment: anEnv andAddress: (anAddress, {index}))
+		self pushControl: (Eval expression: (aBody at: index) withEnvironment: anEnvironment andAddress: (anAddress / index))
 	].! !
 
 !Machine methodsFor: 'runner' stamp: 'L.C 6/Jul/2026, 1:32:20 pm (UTC)'!
@@ -717,146 +844,123 @@ stepRunner: aRunner
 	result == instruction ifFalse: [^result].
 	^ nil! !
 
-!Machine methodsFor: 'Initialize' stamp: 'L.C 10/Jul/2026, 8:24:16 am (UTC)'!
-initMachineWithControlStack: aControlStack withValueStack: aValueStack withEnvVar: aDictionaryOfVariables withRng: aRandomNumberGenerator withLogW: aLogW
+!Machine methodsFor: 'initialize' stamp: 'L.C 7/11/2026 09:47:53'!
+initializeControlStack: aControlStack valueStack: aValueStack environment: aDictionaryOfVariables randomGenerator: aRandomNumberGenerator logWeight: aLogWeight
 
 	controlStack := aControlStack asOrderedCollection.
-	
-	aValueStack  isNil 
-		ifTrue: [valueStack := OrderedCollection new]
-		ifFalse:[valueStack := aValueStack ].
-		
-	aDictionaryOfVariables isNil
-		ifTrue:[envVar := Dictionary new]
-		ifFalse:[envVar := aDictionaryOfVariables ].
-		
+	valueStack := aValueStack ifNil: [OrderedCollection new].
+	environment := aDictionaryOfVariables ifNil: [Dictionary new].		
 	randomGenerator := aRandomNumberGenerator.
-	
-	logWeights := aLogW.
-	
+	logWeight := aLogWeight.
 	callCounter := Dictionary new.
 	
 	^self
 			
 	! !
 
-!Machine methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:20:38 pm (UTC)'!
+!Machine methodsFor: 'getters' stamp: 'L.C 7/11/2026 09:37:35'!
+callCounter: aDictionary
+
+	callCounter := aDictionary! !
+
+!Machine methodsFor: 'getters' stamp: 'L.C 7/11/2026 09:45:40'!
+logWeights
+
+	^logWeight! !
+
+!Machine methodsFor: 'cloning' stamp: 'L.C 7/11/2026 09:47:53'!
 forkWithRng: aRandomNumberGenerator
 	
-	| rng copiedControlStack copiedEnvironment copiedValueStack |
+	| rng copiedControlStack copiedEnvironment copiedValueStack copiedCallCounter newMachine |
 	
-	rng := randomGenerator isNil 
-			ifTrue: [randomGenerator ]
-			ifFalse: [aRandomNumberGenerator ].
+	rng := aRandomNumberGenerator ifNil: [randomGenerator].
 
 	copiedControlStack := controlStack ifNotNil: [ controlStack copy ].
 	copiedValueStack := valueStack ifNotNil: [ valueStack copy ].
-	copiedEnvironment := envVar ifNotNil: [ envVar copy ].
+	copiedEnvironment := environment ifNotNil: [ environment copy ].
+	copiedCallCounter := callCounter ifNotNil: [ callCounter copy ].
+	
+	newMachine := Machine new
+		initializeControlStack: copiedControlStack 
+		valueStack: copiedValueStack 
+		environment:  copiedEnvironment
+		randomGenerator:  rng
+		logWeight: logWeight.
+	
+	newMachine callCounter: copiedCallCounter.
 
-	^Machine new
-		initMachineWithControlStack: copiedControlStack 
-		withValueStack: copiedValueStack 
-		withEnvVar:  copiedEnvironment
-		withRng:  rng
-		withLogW: logWeights.
-			
+	^newMachine
+		
+	
 	! !
 
-!Machine methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 3:45:18 am (UTC)'!
-nextIndexFor: anPreAddress
-
-	| count |
-	count := callCounter at: anPreAddress ifAbsent: [0].
-	
-	callCounter at: anPreAddress put: count+1.
-	
-	^count! !
-
-!Machine methodsFor: 'Getters' stamp: 'L.C 10/Jul/2026, 8:24:16 am (UTC)'!
-logWeights
-
-	^logWeights! !
-
-!Machine class methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:49:18 pm (UTC)'!
-initialMachineWithProgram: aParsedProgram withRng: aRandomNumberGenerator
+!Machine class methodsFor: 'instance creation' stamp: 'L.C 7/11/2026 10:22:39'!
+initialMachineWithProgram: aParsedProgram randomGenerator: aRandomNumberGenerator
 
 	| initialEnv initialEval |
 
 	initialEnv := AlgorithmRunner new initialEnvironment.
-	initialEval := Eval expression: aParsedProgram withEnvironment: initialEnv andAddress: #().
+	initialEval := Eval expression: aParsedProgram withEnvironment: initialEnv andAddress: AddressFactory root.
 	
-	^ self new initMachineWithControlStack: (OrderedCollection with: initialEval)
-		withValueStack: OrderedCollection new 
-		withEnvVar: initialEnv
-		withRng: aRandomNumberGenerator
-		withLogW: 0.0.! !
+	^ self new initializeControlStack: {initialEval}
+		valueStack: OrderedCollection new 
+		environment: initialEnv
+		randomGenerator: aRandomNumberGenerator
+		logWeight: 0.0.! !
 
-!AlgorithmRuns methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 10:29:25 am (UTC)'!
+!AlgorithmRuns methodsFor: 'getters' stamp: 'L.C 7/11/2026 09:04:53'!
 value
-	^value! !
+	^values! !
 
-!LWRun methodsFor: 'category-name' stamp: 'L.C 10/Jul/2026, 8:22:13 am (UTC)'!
-logWeights
-	
-	^logWeights! !
-
-!LWRun methodsFor: 'Instance Creation' stamp: 'L.C 10/Jul/2026, 8:22:13 am (UTC)'!
-withLogW: aLogWValue  withValue: aReturnValue
-	
-	logWeights := aLogWValue.
-	value := aReturnValue.! !
-
-!LWRun class methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 7:46:55 pm (UTC)'!
-withLogW: aLogWValue  withValue: aReturnValue
-
-	^self new withLogW: aLogWValue withValue: aReturnValue ! !
-
-!SMCRun methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 10:07:45 pm (UTC)'!
+!AlgorithmRuns methodsFor: 'setters' stamp: 'L.C 7/11/2026 10:00:29'!
 withValues: aCollectionOfValues
 
 	values := aCollectionOfValues.
 	
 	^self! !
 
-!SMCRun methodsFor: 'Getters' stamp: 'jcm 10/Jul/2026, 4:05:22 pm (UTC)'!
-values
+!LWRun methodsFor: 'getters' stamp: 'L.C 10/Jul/2026, 8:22:13 am (UTC)'!
+logWeights
+	
+	^logWeights! !
 
-	^values! !
+!LWRun methodsFor: 'Instance Creation' stamp: 'L.C 7/11/2026 09:56:49'!
+initializeWithLogWeight: aLogWValue  value: aReturnValue
+	
+	logWeights := aLogWValue.
+	values := aReturnValue.! !
+
+!LWRun class methodsFor: 'instance creation' stamp: 'L.C 7/11/2026 09:58:36'!
+withLogWeight: aLogWeight  value: aReturnValue
+
+	^self new initializeWithLogWeight: aLogWeight value: aReturnValue ! !
 
 !SMCRun class methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 10:07:24 pm (UTC)'!
 withValues: aCollectionOfValues
 
 	^self new withValues: aCollectionOfValues! !
 
-!SSMHRun methodsFor: 'Instance Creation' stamp: 'L.C 7/Jul/2026, 11:36:17 pm (UTC)'!
+!SSMHRun methodsFor: 'Instance Creation' stamp: 'L.C 7/11/2026 08:55:12'!
 initializeWithTrace: aProposedTrace withValue: aReturnValue.
 	
 	trace := aProposedTrace.
-	value := aReturnValue.
+	values := aReturnValue.
 	
 	^self! !
 
-!SSMHRun methodsFor: 'Instance Creation' stamp: 'JCM 5/Jul/2026, 7:50:16 pm (UTC)'!
-withTrace: aProposedTrace withValue: aReturnValue.
-	
-	trace := aProposedTrace.
-	value := aReturnValue.
-	
-	^self! !
-
-!SSMHRun methodsFor: 'as yet unclassified' stamp: 'JCM 5/Jul/2026, 7:51:15 pm (UTC)'!
+!SSMHRun methodsFor: 'getters' stamp: 'JCM 5/Jul/2026, 7:51:15 pm (UTC)'!
 trace
 
 	^trace! !
 
-!SSMHRun class methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 11:36:05 pm (UTC)'!
-withTrace: aProposedTrace withValue: aReturnValue.
+!SSMHRun class methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:57:35'!
+withTrace: aProposedTrace value: aReturnValue.
 	
 	
 	
 	^self new initializeWithTrace: aProposedTrace withValue: aReturnValue ! !
 
-!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 3:51:35 am (UTC)'!
+!Closure methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:33:07'!
 applyArguments: arguments onMachine: aMachine atAddress: anAddress
 
 	| newEnv newAddress |
@@ -864,9 +968,9 @@ applyArguments: arguments onMachine: aMachine atAddress: anAddress
 	
 	1 to: parameters size do: [ :i | newEnv at: (parameters at: i) put: (arguments at: i)].
 
-	newAddress := anAddress,{aMachine nextIndexFor: anAddress}.
+	newAddress := anAddress/(aMachine nextAddressFor: anAddress).
 	
-	aMachine pushBody: body withEnvironment: newEnv andAddress: newAddress.! !
+	aMachine pushBody: body withEnvironment: newEnv address: newAddress.! !
 
 !Closure methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 5:36:17 pm (UTC)'!
 body
@@ -941,12 +1045,13 @@ expecting: aCount at: anAddress
 
 	^ self new initializeExpecting: aCount at: anAddress! !
 
-!CallFunction methodsFor: 'Instance Creation' stamp: 'jcm 9/Jul/2026, 5:33:54 pm (UTC)'!
+!CallFunction methodsFor: 'Instance Creation' stamp: 'L.C 7/11/2026 10:45:16'!
 evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: anAddress
 
-	| count |
+	| count baseAddress |
 
 	count := arguments size.
+	baseAddress := anAddress asAddress.
 
 	aMachine pushControl: (Call expecting: count at: anAddress).
 
@@ -954,13 +1059,13 @@ evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: anAddress
 		aMachine pushControl: (Eval
 			expression: (arguments at: index)
 			withEnvironment: anEnvironment
-			andAddress: (anAddress , {index - 1}))
+			andAddress: (anAddress/(index-1)))
 	].
 
 	aMachine pushControl: (Eval
 		expression: function
 		withEnvironment: anEnvironment
-		andAddress: (anAddress , {#operator})).
+		andAddress: (anAddress/#operator)).
 
 	^ self! !
 
@@ -1029,15 +1134,17 @@ withParameters: aCollectionOfParamaters andBody: aBodyFunction
 	
 		! !
 
-!If methodsFor: 'as yet unclassified' stamp: 'jcm 8/Jul/2026, 8:54:50 pm (UTC)'!
+!If methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:59:13'!
 evalWithMachine: aMachine withEnvironment: anEnviroment andAddress: anAddress
 
-	aMachine pushControl: (If then: (self then) else: (self else) withEnvironment: anEnviroment andAddress: anAddress).
-	aMachine pushControl: (Eval expression: (self condition) withEnvironment: anEnviroment andAddress: (anAddress , {#test})).
+	| baseAddress |
+	baseAddress := anAddress asAddress.
+	aMachine pushControl: (If then: (self then) else: (self else) withEnvironment: anEnviroment andAddress: baseAddress).
+	aMachine pushControl: (Eval expression: (self condition) withEnvironment: anEnviroment andAddress: (baseAddress/#test)).
 	
 	^ self! !
 
-!If methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 2:40:14 pm (UTC)'!
+!If methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:29:38'!
 executeOn: aMachine runner: aRunner
 	
 	| branch tag |
@@ -1046,7 +1153,7 @@ executeOn: aMachine runner: aRunner
 		ifTrue: [branch := then. tag := #then] 
 		ifFalse: [branch := else. tag := #else].
 	
-	aMachine pushControl: (Eval expression: branch withEnvironment: environment andAddress: (address , {tag})).
+	aMachine pushControl: (Eval expression: branch withEnvironment: environment andAddress: (address/tag)).
 	
 	^ self! !
 
@@ -1099,18 +1206,22 @@ then: aThenExpression else: anElseExpression withEnvironment: anEnvironment andA
 
 	^ self new initThen: aThenExpression else: anElseExpression withEnvironment: anEnvironment andAddress: anAddress! !
 
-!Let methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 1:39:56 pm (UTC)'!
+!Let methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:58:58'!
 evalWithMachine: aMachine withEnvironment: anEnviroment andAddress: anAddress
+
+		| baseAddress |
+		baseAddress := anAddress asAddress.
+		
 		bindings isEmpty ifTrue: [
-			aMachine pushBody: body withEnvironment: environment andAddress: address.
+			aMachine pushBody: body withEnvironment: environment address: address.
 			^ self].
 		
-		aMachine pushControl: (Let binds: bindings withIndex: 1 andBody: body andEnvironment: anEnviroment andAddress: anAddress ).
-		aMachine pushControl: (Eval expression: (bindings at: 2) withEnvironment: anEnviroment andAddress: (anAddress , {#let. 1})).
+		aMachine pushControl: (Let binds: bindings withIndex: 1 andBody: body andEnvironment: anEnviroment andAddress: baseAddress ).
+		aMachine pushControl: (Eval expression: (bindings at: 2) withEnvironment: anEnviroment andAddress: (baseAddress/#let/1)).
 		
 		^self! !
 
-!Let methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 11:25:49 am (UTC)'!
+!Let methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:30:02'!
 executeOn: aMachine runner: aRunner
 
 	| newEnv nextIndex value varName |
@@ -1133,9 +1244,9 @@ executeOn: aMachine runner: aRunner
 			aMachine pushControl: (Eval 
 				expression: (bindings at: (nextIndex+1))
 				withEnvironment: newEnv 
-				andAddress: (address,{#let. nextIndex}))
+				andAddress: (address/#let/nextIndex))
 		] ifFalse: [
-			aMachine pushBody: body withEnvironment: newEnv andAddress: address.
+			aMachine pushBody: body withEnvironment: newEnv address: address.
 		].
 	
 	^ self! !
@@ -1169,22 +1280,22 @@ initBinds: aBindCollection withBody: aBody
 
 	^self new initBinds: aBindCollection withBody: aBody ! !
 
-!Observe methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 1:03:23 pm (UTC)'!
-evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: anAddress
+!Observe methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:58:21'!
+evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: aRawAddress
 
-	address := anAddress.
+	address := aRawAddress asAddress.
 	
 	aMachine pushControl: (Observe withAddress: address).
 	
 	aMachine pushControl: (Eval 
 		expression: (observedValue) 
 		withEnvironment: anEnvironment 
-		andAddress: (address , {#v})).
+		andAddress: (address/#v)).
 
 	aMachine pushControl: (Eval 
 		expression: (distribution) 
 		withEnvironment: anEnvironment 
-		andAddress: (address , {#d})).
+		andAddress: (address/#d)).
 	
 	^ self! !
 
@@ -1224,16 +1335,14 @@ withDistribution: aDistribution withObservedValue: anObservedValue
 	
 	! !
 
-!Sample methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 7:49:07 pm (UTC)'!
-evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: anAddress
+!Sample methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:57:57'!
+evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: aRawAddress
 
-	address := anAddress.
-
-	aMachine pushControl: self.
+	aMachine pushControl: (Sample withAddress: aRawAddress).
 	aMachine pushControl: (Eval 
 			expression: distribution
 			withEnvironment: anEnvironment 
-			andAddress: (address,{#d})).
+			andAddress: (aRawAddress asAddress/#d)).
 	^ self! !
 
 !Sample methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 10:03:58 am (UTC)'!
@@ -1308,10 +1417,24 @@ withValue: aReturnValue
 
 	^self new withValue: aReturnValue! !
 
+!SMCObserve methodsFor: 'Getters' stamp: 'L.C 7/11/2026 09:14:06'!
+address
+
+	^address! !
+
 !SMCObserve methodsFor: 'Getters' stamp: 'jcm 7/Jul/2026, 10:03:46 pm (UTC)'!
 particle
 
 	^particle! !
+
+!SMCObserve methodsFor: 'Instance Creation' stamp: 'L.C 7/11/2026 09:13:44'!
+initializeWithAddress: anAddress forParticle: aParticle withLogIncrement: aLogValue
+
+	address  := anAddress .
+	particle := aParticle .
+	logIncrement := aLogValue .
+	
+	^self! !
 
 !SMCObserve methodsFor: 'Instance Creation' stamp: 'jcm 7/Jul/2026, 10:16:23 pm (UTC)'!
 isObserve
@@ -1323,27 +1446,12 @@ logIncrement
 
 	^logIncrement ! !
 
-!SMCObserve methodsFor: 'Instance Creation' stamp: 'jcm 7/Jul/2026, 9:45:23 pm (UTC)'!
+!SMCObserve class methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:13:44'!
 withAddress: anAddress forParticle: aParticle withLogIncrement: aLogValue
 
-	address  := anAddress .
-	particle := aParticle .
-	logIncrement := aLogValue .
-	
-	^self! !
+	^self new initializeWithAddress: anAddress forParticle: aParticle withLogIncrement: aLogValue! !
 
-!SMCObserve class methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 9:44:35 pm (UTC)'!
-withAddress: anAddress forParticle: aParticle withLogIncrement: aLogValue
-
-	^self new withAddress: anAddress forParticle: aParticle withLogIncrement: aLogValue! !
-
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:28:55 am (UTC)'!
-initialize
-	sampleValues := Dictionary new.
-	sampleDensities := Dictionary new.
-	observeDensities := Dictionary new.! !
-
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 1:56:34 am (UTC)'!
+!MHTrace methodsFor: 'evaluation' stamp: 'L.C 10/Jul/2026, 1:56:34 am (UTC)'!
 logDensityExcluding: excludedAddresses
 
 	| density |
@@ -1356,60 +1464,86 @@ logDensityExcluding: excludedAddresses
 	
 	^ density.! !
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 12:49:14 pm (UTC)'!
-observeDensities
-^observeDensities! !
+!MHTrace methodsFor: 'requesting' stamp: 'L.C 7/11/2026 09:23:49'!
+includesSampleAt: anAddress
+	
+	^sampleValues includesKey: anAddress! !
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 1:20:43 am (UTC)'!
+!MHTrace methodsFor: 'requesting' stamp: 'L.C 7/11/2026 09:23:27'!
 randomSampleAdressUsing: aRandomNumberGenerator
 
 	sampleValues isEmpty ifTrue: [self error: 'Cannot pick an address from an empty trace.'].
+	
 	^sampleValues keys atRandom: aRandomNumberGenerator.! !
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 12:49:22 pm (UTC)'!
+!MHTrace methodsFor: 'requesting' stamp: 'L.C 7/11/2026 09:24:08'!
+sampleValueAt: anAddress
+
+	^sampleValues at: anAddress! !
+
+!MHTrace methodsFor: 'requesting' stamp: 'L.C 7/11/2026 09:24:27'!
+sampleValueAt: anAddress ifAbsent: aBlock
+
+	^sampleValues at: anAddress ifAbsent: aBlock! !
+
+!MHTrace methodsFor: 'getters' stamp: 'L.C 7/11/2026 09:21:47'!
+observeDensities
+	
+	^observeDensities copy! !
+
+!MHTrace methodsFor: 'getters' stamp: 'L.C 7/11/2026 09:31:04'!
+sampleAddresses
+
+	^sampleDensities keys asSet! !
+
+!MHTrace methodsFor: 'getters' stamp: 'L.C 7/11/2026 09:21:55'!
 sampleDensities
-^sampleDensities! !
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'JCM 5/Jul/2026, 2:19:28 am (UTC)'!
+	^sampleDensities copy! !
+
+!MHTrace methodsFor: 'getters' stamp: 'L.C 7/11/2026 09:22:02'!
 sampleValues 
- ^sampleValues ! !
+	
+	^sampleValues copy ! !
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 6:04:42 am (UTC)'!
+!MHTrace methodsFor: 'getters' stamp: 'L.C 7/11/2026 09:31:14'!
+samplesCount
+
+	^sampleDensities size! !
+
+!MHTrace methodsFor: 'updating' stamp: 'L.C 10/Jul/2026, 6:04:42 am (UTC)'!
 updateObservedCacheAt: anAddress put: anObservedDensity
 
 	(observeDensities includesKey: anAddress) ifTrue: [self error: 'Address collision at ', anAddress asString].
 	
 	observeDensities at: anAddress put: anObservedDensity.! !
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 6:03:37 am (UTC)'!
+!MHTrace methodsFor: 'updating' stamp: 'L.C 10/Jul/2026, 6:03:37 am (UTC)'!
 updateSampleDensitiesAt: anAddress put: aSampledDensity.
 
 	(sampleDensities includesKey: anAddress) ifTrue: [self error: 'Address collision at ', anAddress asString].
 	
 	sampleDensities at: anAddress put: aSampledDensity! !
 
-!MHTrace methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 6:03:42 am (UTC)'!
+!MHTrace methodsFor: 'updating' stamp: 'L.C 10/Jul/2026, 6:03:42 am (UTC)'!
 updateSampleValuesAt: anAddress put: aSampledValue.
 	
 	(sampleValues includesKey: anAddress) ifTrue: [self error: 'Address collision at ', anAddress asString].
 	
 	sampleValues at: anAddress put: aSampledValue ! !
 
-!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:32:53 am (UTC)'!
+!MHTrace methodsFor: 'initialization' stamp: 'L.C 8/Jul/2026, 12:28:55 am (UTC)'!
+initialize
+	sampleValues := Dictionary new.
+	sampleDensities := Dictionary new.
+	observeDensities := Dictionary new.! !
+
+!SingleSiteProposal methodsFor: 'evaluation' stamp: 'L.C 7/11/2026 09:34:20'!
 forwardExcludedAddresses
 	
-	^ {selectedAddress} union: (proposedTrace sampleDensities keys asSet difference: (currentTrace sampleDensities keys asSet))! !
+	^ {selectedAddress} union: (proposedTrace sampleAddresses difference: currentTrace sampleAddresses)! !
 
-!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:27:51 am (UTC)'!
-initializeWith: aCurrentTrace proposed: aProposedTrace address: anAddress
-
-	currentTrace := aCurrentTrace.
-	proposedTrace := aProposedTrace.
-	selectedAddress := anAddress.
-	
-	^self.! !
-
-!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:52:53 am (UTC)'!
+!SingleSiteProposal methodsFor: 'evaluation' stamp: 'L.C 5/Jul/2026, 2:52:53 am (UTC)'!
 logAlpha
 
 	| numerator denominator |
@@ -1419,7 +1553,7 @@ logAlpha
 
 	^ numerator - denominator + self proposalRatio.! !
 
-!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:35:42 am (UTC)'!
+!SingleSiteProposal methodsFor: 'evaluation' stamp: 'L.C 5/Jul/2026, 2:35:42 am (UTC)'!
 proposalRatio
 
 	| currentSamples proposedSamples |
@@ -1429,55 +1563,88 @@ proposalRatio
 	
 	^ (currentSamples size / proposedSamples size) ln.! !
 
-!SingleSiteProposal methodsFor: 'as yet unclassified' stamp: 'L.C 5/Jul/2026, 2:33:48 am (UTC)'!
+!SingleSiteProposal methodsFor: 'evaluation' stamp: 'L.C 7/11/2026 09:33:56'!
 reverseExcludedAddresses
 	
-	^ {selectedAddress} union: (currentTrace sampleDensities keys asSet difference: (proposedTrace sampleDensities keys asSet))! !
+	^ {selectedAddress} union: (currentTrace sampleAddresses difference: proposedTrace sampleAddresses)! !
 
-!SingleSiteProposal class methodsFor: 'instance creation' stamp: 'L.C 5/Jul/2026, 2:27:00 am (UTC)'!
-from: aCurrentTrace to: aProposedTrace at: anAddress
-	
-	^ self new initializeWith: aCurrentTrace proposed: aProposedTrace address: anAddress! !
+!SingleSiteProposal methodsFor: 'initialization' stamp: 'L.C 5/Jul/2026, 2:27:51 am (UTC)'!
+initializeWith: aCurrentTrace proposed: aProposedTrace address: anAddress
 
-!Distribution methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:02:28 am (UTC)'!
-logarithmicProbabilityWith: aValue
-
-	^self subclassResponsibility! !
-
-!Distribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 1:26:26 am (UTC)'!
-sample
-	^self subclassResponsibility! !
-
-!BernoulliDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:28:49'!
-initializeWithProbability: aProbability randomGenerator: aRandomNumberGenerator
-
-	probabil := aProbability.
-	randomGenerator := aRandomNumberGenerator.
+	currentTrace := aCurrentTrace.
+	proposedTrace := aProposedTrace.
+	selectedAddress := anAddress.
 	
 	^self.! !
 
-!BernoulliDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:36:32'!
+!SingleSiteProposal class methodsFor: 'instance creation' stamp: 'L.C 7/11/2026 09:32:44'!
+withCurrentTrace: aCurrentTrace proposedTrace: aProposedTrace atAddress: anAddress
+	
+	^ self new initializeWith: aCurrentTrace proposed: aProposedTrace address: anAddress! !
+
+!Distribution methodsFor: 'sampling' stamp: 'L.C 7/Jul/2026, 1:26:26 am (UTC)'!
+sample
+	^self subclassResponsibility! !
+
+!Distribution methodsFor: 'sampling' stamp: 'L.C 7/11/2026 08:02:00'!
+sampleUsing: aRandomNumberGenerator
+
+	^self subclassResponsibility! !
+
+!Distribution methodsFor: 'evaluation' stamp: 'L.C 7/11/2026 08:05:03'!
+logarithmicProbabilityFor: aValue
+
+	^self subclassResponsibility! !
+
+!BernoulliDistribution methodsFor: 'sampling' stamp: 'L.C 7/11/2026 08:09:19'!
 sample
 	
-	^randomGenerator next < probabil! !
+	^self sampleUsing: randomGenerator.! !
 
-!BernoulliDistribution class methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:31:05'!
-withProbability: aProbability randomGenerator: aRandomNumberGenerator
+!BernoulliDistribution methodsFor: 'sampling' stamp: 'L.C 7/11/2026 08:08:57'!
+sampleUsing: aRandomGenerator
+	
+	^aRandomGenerator next < probability.! !
+
+!BernoulliDistribution methodsFor: 'initialization' stamp: 'L.C 7/11/2026 08:15:20'!
+initializeWithProbability: aProbability
+
+	probability := aProbability asFloat.
+		
+	^self.! !
+
+!BernoulliDistribution methodsFor: 'evaluation' stamp: 'L.C 7/11/2026 09:11:35'!
+logarithmicProbabilityFor: aValue
+
+	(aValue isKindOf: Boolean) ifFalse: [self error: 'Observed value must be boolean'].
+
+	aValue 
+		ifTrue: [^probability ln]
+		ifFalse: [^(1-probability) ln].
+	
+	^Float negativeInfinity.! !
+
+!BernoulliDistribution class methodsFor: 'instance creation' stamp: 'L.C 7/11/2026 08:14:53'!
+withProbability: aProbability
 
 	(aProbability between: 0 and: 1) ifFalse: [self error: 'Probability must exists in [0,1]'].
 	
-	^self new initializeWithProbability: aProbability	randomGenerator: aRandomNumberGenerator
+	^self new initializeWithProbability: aProbability
 ! !
 
-!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:26:48 pm (UTC)'!
-initializeWithMean: aMeanValue standardDeviation: aStandardDeviation randomGenerator: aRandomNumberGenerator
+!NormalDistribution methodsFor: 'initialization' stamp: 'L.C 7/11/2026 08:25:53'!
+initializeWithMean: aMeanValue standardDeviation: aStandardDeviation
 	
 	mean := aMeanValue.
-	standardDeviation := aStandardDeviation.
-	randomGenerator := aRandomNumberGenerator.! !
+	standardDeviation := aStandardDeviation.! !
 
-!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:02:28 am (UTC)'!
-logarithmicProbabilityWith: aValue
+!NormalDistribution methodsFor: 'getters' stamp: 'L.C 7/11/2026 08:05:34'!
+mean 
+
+	^mean! !
+
+!NormalDistribution methodsFor: 'evaluation' stamp: 'L.C 7/11/2026 08:05:24'!
+logarithmicProbabilityFor: aValue
 
 "z = (float(x) - self.mu) / self.sigma
         return -0.5 * (LOG2PI + z * z) - math.log(self.sigma)"
@@ -1488,29 +1655,13 @@ logarithmicProbabilityWith: aValue
 	
 	^ -0.5 * (log2Pi + (normalized * normalized)) - standardDeviation ln! !
 
-!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 2:35:23 am (UTC)'!
-mean 
-
-^mean! !
-
-!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 7/Jul/2026, 1:50:15 am (UTC)'!
+!NormalDistribution methodsFor: 'sampling' stamp: 'L.C 7/11/2026 08:03:32'!
 sample
 
-	"https://es.wikipedia.org/wiki/M%C3%A9todo_de_Box-Muller" 
+	^self sampleUsing: randomGenerator.! !
 
-	| u1 u2 z0 |
-	
-	u1 := randomGenerator next.
-	u2 := randomGenerator next.
-	
-	u1 = 0.0 ifTrue: [ u1 := 1.0e-10 ]. "emula el limite de u1 teniendo a 0"
-	
-	z0 := (-2.0 * u1 ln) sqrt * (2.0 * Float pi * u2) cos.
-	
-	^ (mean + (z0 * standardDeviation)) asFloat! !
-
-!NormalDistribution methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:04:55 am (UTC)'!
-sampleWith: aRandomNumberGenerator
+!NormalDistribution methodsFor: 'sampling' stamp: 'L.C 7/11/2026 08:02:35'!
+sampleUsing: aRandomNumberGenerator
 
 	| u1 u2 z0 |
 	
@@ -1523,7 +1674,16 @@ sampleWith: aRandomNumberGenerator
 	
 	^ (mean + (z0 * standardDeviation)) asFloat! !
 
-!NormalDistribution class methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:26:43 pm (UTC)'!
+!NormalDistribution class methodsFor: 'instance creation' stamp: 'L.C 7/11/2026 08:25:30'!
+withMean: aMeanValue standardDeviation: aStandardDeviation
+	
+	aStandardDeviation <= 0 ifTrue: [self error: 'Standard deviation must be positive'].
+
+	^ self new 
+		initializeWithMean: aMeanValue 
+		standardDeviation: aStandardDeviation.! !
+
+!NormalDistribution class methodsFor: 'instance creation' stamp: 'L.C 10/Jul/2026, 12:26:43 pm (UTC)'!
 withMean: aMeanValue standardDeviation: aStandardDeviation randomGenerator: aRandomNumberGenerator
 	
 	aStandardDeviation <= 0 ifTrue: [self error: 'Standard deviation must be positive'].
@@ -1545,11 +1705,11 @@ applyArguments: arguments onMachine: aMachine atAddress: address
 	result := (arguments at: 1) + (arguments at: 2).
 	aMachine pushValue: result.! !
 
-!BernoulliPrimitive methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:32:58'!
+!BernoulliPrimitive methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 08:11:42'!
 applyArguments: arguments onMachine: aMachine atAddress: address
 
 	| distribution |
-	distribution := BernoulliDistribution withProbability: (arguments at: 1) randomGenerator: aMachine randomGenerator.
+	distribution := BernoulliDistribution withProbability: (arguments at: 1).
 	
 	aMachine pushValue: distribution.! !
 
@@ -1574,15 +1734,14 @@ applyArguments: arguments onMachine: aMachine atAddress: address
 	result := (arguments at: 1) * (arguments at: 2).
 	aMachine pushValue: result.! !
 
-!NormalPrimitive methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:24:46 pm (UTC)'!
+!NormalPrimitive methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 08:25:10'!
 applyArguments: arguments onMachine: aMachine atAddress: address
 
 	| distribution |
 	distribution := NormalDistribution 
 		withMean: (arguments at: 1) 
-		standardDeviation: (arguments at: 2) 
-		randomGenerator: aMachine randomGenerator.
-	
+		standardDeviation: (arguments at: 2).
+
 	aMachine pushValue: distribution.! !
 
 !SubtractPrimitive methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 2:15:14 am (UTC)'!
@@ -1613,10 +1772,19 @@ for: aCollection
 
 	^self new for: aCollection! !
 
-!AlgorithmRunner methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:33:25'!
+!AlgorithmRunner methodsFor: 'running' stamp: 'L.C 10/Jul/2026, 12:48:03 pm (UTC)'!
+run
+
+	| runValue |
+	
+	[runValue isNil] whileTrue:[runValue := machine resumeRunner: self].
+	"Termina cuando recibe un done"
+	^runValue! !
+
+!AlgorithmRunner methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 11:29:09'!
 initialEnvironment
 	| env |
-	env := Dictionary new.
+	env := Environment root.
 	env at: #+ put: AddPrimitive new.
 	env at: #- put: SubtractPrimitive new.
 	env at: #* put: MultiplyPrimitive new.
@@ -1625,15 +1793,6 @@ initialEnvironment
 	env at: #normal put: NormalPrimitive new.
 	env at: #bernoulli put: BernoulliPrimitive new.
 	^env! !
-
-!AlgorithmRunner methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:48:03 pm (UTC)'!
-run
-
-	| runValue |
-	
-	[runValue isNil] whileTrue:[runValue := machine resumeRunner: self].
-	"Termina cuando recibe un done"
-	^runValue! !
 
 !AlgorithmRunner methodsFor: 'Special Instructions' stamp: 'jcm 6/Jul/2026, 7:39:52 pm (UTC)'!
 doneWithValue: aReturnValue
@@ -1655,41 +1814,41 @@ machine: aMachine
 	
 	machine := aMachine! !
 
-!ImportanceSamplingRunner methodsFor: 'Special Instructions' stamp: 'jcm 10/Jul/2026, 5:36:57 pm (UTC)'!
+!ImportanceSamplingRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/11/2026 08:19:07'!
 observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
 	
 	| logIncrement |
-	logIncrement := aDistribution logarithmicProbabilityWith: anObservedValue.
+	logIncrement := aDistribution logarithmicProbabilityFor: anObservedValue.
 	
-	machine incrementLogW: (aDistribution logarithmicProbabilityWith: anObservedValue).
+	machine incrementLogW: (aDistribution logarithmicProbabilityFor: anObservedValue).
 	machine pushValue: anObservedValue.
 	
 	^self returnWithAddress: anAddress withLogIncrement: logIncrement withObservedValue: anObservedValue.
 ! !
 
-!ImportanceSamplingRunner methodsFor: 'Special Instructions' stamp: 'jcm 10/Jul/2026, 5:33:20 pm (UTC)'!
+!ImportanceSamplingRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/11/2026 08:21:23'!
 sampleWithAddress: anAddress withDistribution: aDistribution
 
-	^aDistribution sample.! !
+	^aDistribution sampleUsing: machine randomGenerator.! !
 
-!LWRunner methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:22:04 am (UTC)'!
-runWithProgram: aProgram withRng: aRandomNumberGenerator
+!LWRunner methodsFor: 'initialize' stamp: 'L.C 7/11/2026 09:53:45'!
+runWithProgram: aProgram randomGenerator: aRandomNumberGenerator
 
 	randomNumberGenerator  := aRandomNumberGenerator.
-	machine := Machine initialMachineWithProgram: aProgram withRng: randomNumberGenerator.
+	machine := Machine initialMachineWithProgram: aProgram randomGenerator: randomNumberGenerator.
 	program := aProgram.
 	
 	^self run
 	
 	! !
 
-!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 10/Jul/2026, 8:23:19 am (UTC)'!
+!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/11/2026 09:57:08'!
 doneWithValue: aReturnValue
 
 "Cambiar nombre aReturnValue viene de V[-1] "
 
 	
-	^LWRun withLogW: machine logWeights withValue: aReturnValue.! !
+	^LWRun withLogWeight: machine logWeights value: aReturnValue.! !
 
 !LWRunner methodsFor: 'Special Instructions' stamp: 'jcm 10/Jul/2026, 5:37:34 pm (UTC)'!
 returnWithAddress: anAddress withLogIncrement: logIncrement withObservedValue: anObservedValue
@@ -1700,15 +1859,14 @@ returnWithAddress: anAddress withLogIncrement: logIncrement withObservedValue: a
 
 	! !
 
-!LWRunner class methodsFor: 'as yet unclassified' stamp: 'jcm 6/Jul/2026, 7:08:42 pm (UTC)'!
-runWithProgram: aProgram withRng: aRandomNumberGenerator
+!LWRunner class methodsFor: 'instance creation' stamp: 'L.C 7/11/2026 09:53:45'!
+runWithProgram: aProgram randomGenerator: aRandomNumberGenerator
 
-	^self new runWithProgram: aProgram withRng: aRandomNumberGenerator! !
+	^self new runWithProgram: aProgram randomGenerator: aRandomNumberGenerator! !
 
-!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 7/Jul/2026, 9:51:21 pm (UTC)'!
+!SMCRunner methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:55:05'!
 advance: aParticle
 
-	
 	machine := aParticle.
 	
 	^aParticle resumeRunner: self
@@ -1751,46 +1909,6 @@ resampleFromObserveMessages: aCollectionOfObservedMessages
 	
 	
 
-
-	
-
-	! !
-
-!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 6:17:33 pm (UTC)'!
-run
-
-	| messages |
-	
-	[true] whileTrue:[
-		messages := particles collect: [:particle | self advance: particle].
-		
-		"Chequea si todas son Done"
-		(messages allSatisfy: [:msg | msg isDone]) ifTrue:[
-			^SMCRun withValues: (messages collect: [:msg | msg value])
-			].
-		
-		"Chequea si todas son Observe"
-		(messages allSatisfy: [:msg | msg isObserve]) ifFalse: [
-			self error: 'algorithm needs all particles to reach observe together'
-		].
-		
-		
-		particles := self resampleFromObserveMessages: messages.
-		
-		]
-
-	
-
-	! !
-
-!SMCRunner methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 3:39:19 pm (UTC)'!
-runWithProgram: aProgram withRng: aCollectionOfRandomNumberGenerators  withParticles: aCollectionOfParticles
-
-	particles := aCollectionOfParticles.
-	randomNumberGenerators  := aCollectionOfRandomNumberGenerators .
-	program  := aProgram.
-	
-	^self run
 
 	
 
@@ -1839,11 +1957,11 @@ doneWithValue: aReturnValue
 	
 	^SMCDone withValue: aReturnValue! !
 
-!SMCRunner methodsFor: 'Special Instructions' stamp: 'L.C 8/Jul/2026, 6:54:17 am (UTC)'!
+!SMCRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/11/2026 08:19:15'!
 observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
 
 	| logIncrement |
-	logIncrement := aDistribution logarithmicProbabilityWith: anObservedValue.
+	logIncrement := aDistribution logarithmicProbabilityFor: anObservedValue.
 	
 	"Machine es la particula actual sobre la cual se esta avanzando, se define en el metodo advance"
 	machine incrementLogW: logIncrement.
@@ -1856,66 +1974,116 @@ returnWithAddress: anAddress withLogIncrement: logIncrement withObservedValue: a
 	
 	^SMCObserve withAddress: anAddress forParticle: machine withLogIncrement: logIncrement! !
 
+!SMCRunner methodsFor: 'running' stamp: 'L.C 7/11/2026 09:19:50'!
+run
+
+	| messages |
+	
+	[true] whileTrue:[
+		messages := particles collect: [:particle | self advance: particle].
+		
+		"Chequea si todas son Done"
+		(messages allSatisfy: [:msg | msg isDone]) 
+			ifTrue:[^SMCRun withValues: (messages collect: [:msg | msg value])].
+		
+		"Chequea si todas son Observe"
+		(messages allSatisfy: [:msg | msg isObserve]) 
+			ifFalse: [self error: 'algorithm needs all particles to reach observe together'].
+			
+		(messages allSatisfy: [:msg | msg address = messages first address])
+			ifFalse: [self error: 'requires a shared observe sequence'].
+		
+		particles := self resampleFromObserveMessages: messages.
+	]
+
+	
+
+	! !
+
+!SMCRunner methodsFor: 'running' stamp: 'jcm 10/Jul/2026, 3:39:19 pm (UTC)'!
+runWithProgram: aProgram withRng: aCollectionOfRandomNumberGenerators  withParticles: aCollectionOfParticles
+
+	particles := aCollectionOfParticles.
+	randomNumberGenerators  := aCollectionOfRandomNumberGenerators .
+	program  := aProgram.
+	
+	^self run
+
+	
+
+	! !
+
 !SMCRunner class methodsFor: 'instance creation' stamp: 'jcm 10/Jul/2026, 6:26:52 pm (UTC)'!
 runWithProgram: aProgram withRng: aCollectionOfRandomNumberGenerators withParticles: aCollectionOfParticles
 	
 	^self new runWithProgram: aProgram withRng: aCollectionOfRandomNumberGenerators withParticles: aCollectionOfParticles! !
 
-!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/Jul/2026, 11:42:52 pm (UTC)'!
+!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/11/2026 09:58:48'!
 doneWithValue: aReturnValue
 
 "Cambiar nombre aReturnValue viene de V[-1] "
 
 	
-	^SSMHRun withTrace: trace withValue: aReturnValue.
+	^SSMHRun withTrace: trace value: aReturnValue.
 
 	
 	
 	! !
 
-!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 8/Jul/2026, 5:51:46 pm (UTC)'!
+!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/11/2026 08:19:51'!
 observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
 
 	
-	trace updateObservedCacheAt: anAddress put: (aDistribution logarithmicProbabilityWith: anObservedValue) .
+	trace updateObservedCacheAt: anAddress put: (aDistribution logarithmicProbabilityFor: anObservedValue) .
 	machine pushValue: anObservedValue.
 	
 	^nil.! !
 
-!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 10/Jul/2026, 12:23:23 pm (UTC)'!
+!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 7/11/2026 08:23:32'!
 sampleWithAddress: anAddress withDistribution: aDistribution 
 
 	| sampledValue |
 	
-	trace ifNil: [ trace := MHTrace new ].
+	trace ifNil: [trace := MHTrace new].
 	
 	(anAddress ~= redrawAddress and: [cache notNil and: [cache includesKey: anAddress]])
 		ifTrue:[sampledValue := cache at: anAddress ]
-		ifFalse:[sampledValue := aDistribution sample ].
+		ifFalse:[sampledValue := aDistribution sampleUsing: machine randomGenerator ].
 		
 	trace updateSampleValuesAt: anAddress put: sampledValue.
-	trace updateSampleDensitiesAt: anAddress put: (aDistribution logarithmicProbabilityWith: sampledValue).
+	trace updateSampleDensitiesAt: anAddress put: (aDistribution logarithmicProbabilityFor: sampledValue).
 	
 	^sampledValue
 	
 	! !
 
-!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:40:24 am (UTC)'!
+!SSMHRunner methodsFor: 'setters' stamp: 'L.C 8/Jul/2026, 12:39:53 am (UTC)'!
+trace: aTrace
+	
+	trace := aTrace! !
+
+!SSMHRunner methodsFor: 'getters' stamp: 'L.C 10/Jul/2026, 12:40:24 am (UTC)'!
 machine
 	^machine! !
 
-!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 11:13:32 am (UTC)'!
-run: aProgram withRng: aRandomNumberGenerator
+!SSMHRunner methodsFor: 'getters' stamp: 'L.C 10/Jul/2026, 12:40:47 pm (UTC)'!
+trace
+
+	^trace
+	! !
+
+!SSMHRunner methodsFor: 'running' stamp: 'L.C 7/11/2026 11:09:23'!
+run: aProgram withRandomGenerator: aRandomNumberGenerator
 
 	| env result |
 	env := self initialEnvironment.
 	randomNumberGenerator := aRandomNumberGenerator.
 	machine := Machine new
-		initMachineWithControlStack: { Eval expression: aProgram withEnvironment: env andAddress: #() } 
-		withValueStack: nil
-		withEnvVar: env
-		withRng: aRandomNumberGenerator 
-		withLogW: 0.0.
+		initializeControlStack: { Eval expression: aProgram withEnvironment: env andAddress: AddressFactory root } 
+		valueStack: nil
+		environment: env
+		randomGenerator: aRandomNumberGenerator 
+		logWeight: 0.0.
 	trace := MHTrace new.
 	program := aProgram.
 	
@@ -1929,18 +2097,18 @@ run: aProgram withRng: aRandomNumberGenerator
 	
 ! !
 
-!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 3:59:46 am (UTC)'!
-run: aProgram withRng: aRandomNumberGenerator redrawAddress: anAddressToRedraw withCache: aCollectionOfSampledValues
+!SSMHRunner methodsFor: 'running' stamp: 'L.C 7/11/2026 11:09:28'!
+run: aProgram withRandomGenerator: aRandomNumberGenerator redrawAddress: anAddressToRedraw cache: aCollectionOfSampledValues
 
 	| env result |
 	env := self initialEnvironment.
 	randomNumberGenerator := aRandomNumberGenerator.
 	machine := Machine new
-		initMachineWithControlStack: { Eval expression: aProgram withEnvironment: env andAddress: #() } 
-		withValueStack: nil
-		withEnvVar: env
-		withRng: aRandomNumberGenerator 
-		withLogW: 0.0.
+		initializeControlStack: { Eval expression: aProgram withEnvironment: env andAddress: AddressFactory root} 
+		valueStack: nil
+		environment: env
+		randomGenerator: aRandomNumberGenerator 
+		logWeight: 0.0.
 	trace := MHTrace new.
 	redrawAddress  := anAddressToRedraw.
 	cache := aCollectionOfSampledValues.
@@ -1956,57 +2124,52 @@ run: aProgram withRng: aRandomNumberGenerator redrawAddress: anAddressToRedraw w
 	
 ! !
 
-!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:40:47 pm (UTC)'!
-trace
-
-	^trace
-	! !
-
-!SSMHRunner methodsFor: 'as yet unclassified' stamp: 'L.C 8/Jul/2026, 12:39:53 am (UTC)'!
-trace: aTrace
-	
-	trace := aTrace! !
-
-!DistributionTest methodsFor: 'normal' stamp: 'L.C 8/Jul/2026, 12:02:28 am (UTC)'!
+!DistributionTest methodsFor: 'normal' stamp: 'L.C 7/11/2026 08:28:42'!
 test01LogProb
 
 	| dist prob |
-	dist := NormalDistribution withMean: 0.0 standardDeviation: 1.0 randomGenerator: nil.
+	dist := NormalDistribution withMean: 0.0 standardDeviation: 1.0.
 	
-	prob := dist logarithmicProbabilityWith: 0.0.
+	prob := dist logarithmicProbabilityFor: 0.0.
 	
 	self assert: ((prob - (-0.918938)) abs < 0.0001)! !
 
-!DistributionTest methodsFor: 'normal' stamp: 'L.C 7/Jul/2026, 1:57:17 am (UTC)'!
+!DistributionTest methodsFor: 'normal' stamp: 'L.C 7/11/2026 08:29:25'!
 test02Sample
 
 	| distribution randomMock sample |
 	randomMock := ReadStream on: #(0.5 0.5).
 	
-	distribution := NormalDistribution withMean: 10.0 standardDeviation: 2.0 randomGenerator: randomMock.
-	sample := distribution sample.
+	distribution := NormalDistribution withMean: 10 standardDeviation: 2.
+	sample := distribution sampleUsing: randomMock.
 	
 	self assert: sample class equals: SmallFloat64.! !
 
-!InterpreterTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:28:50 am (UTC)'!
+!InterpreterTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:47:53'!
 dummyMachineWithControlStack: aControlStack
 
 ^ Machine new
-		initMachineWithControlStack: aControlStack
-		withValueStack: nil 
-		withEnvVar: nil 
-		withRng: Random new
-		withLogW: 0.! !
+		initializeControlStack: aControlStack
+		valueStack: nil 
+		environment: nil 
+		randomGenerator: Random new
+		logWeight: 0.! !
 
 !InterpreterTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 2:21:43 am (UTC)'!
 evalAST: anAST
 	
 	^ self evalAST: anAST withEnvironment: runner initialEnvironment.! !
 
-!InterpreterTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:37:24 am (UTC)'!
+!InterpreterTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:32:32'!
 evalAST: anAST withEnvironment: anEnvironment
 	
-	machine := self dummyMachineWithControlStack: {Eval expression: anAST withEnvironment: anEnvironment andAddress: #().}.
+	machine := self dummyMachineWithControlStack: {
+		Eval 
+			expression: anAST 
+			withEnvironment: anEnvironment 
+			andAddress: AddressFactory root
+		}.
+		
 	^ (machine resumeRunner: runner) value! !
 
 !InterpreterTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:28:24 am (UTC)'!
@@ -2014,12 +2177,12 @@ setUp
 	runner := SSMHRunner new.
 	runner trace: MHTrace new. "PARCHE TEMPORAL"! !
 
-!LWTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 2:23:53 pm (UTC)'!
+!LWTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:04:56'!
 test01SampleReturnSampledValue
 
 	| firstResult firstWeight normalDist results sampleInst |
 	"normalDist := CallFunction withFunction: #normal withArguments: {0. 1}."
-	normalDist := NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	normalDist := NormalDistribution withMean: 0 standardDeviation: 1.
 	sampleInst := Sample withDistribution: normalDist.
 	
 	results := LikelihoodWeighting program: sampleInst rng: Random new for: 1.
@@ -2030,11 +2193,11 @@ test01SampleReturnSampledValue
 	self assert: firstResult isNumber.
 	self assert: firstWeight equals: 1.! !
 
-!LWTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 2:26:19 pm (UTC)'!
+!LWTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 08:27:01'!
 test02WeightsNormalizeToOne
 	
 	| program results sumOfWeights weights |
-	program := Sample withDistribution: (NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new).
+	program := Sample withDistribution: (NormalDistribution withMean: 0 standardDeviation: 1).
 	
 	results := LikelihoodWeighting program: program rng: Random new for: 100.
 	
@@ -2044,22 +2207,22 @@ test02WeightsNormalizeToOne
 	
 	self assert: ((sumOfWeights - 1.0) abs < 0.0001).! !
 
-!LWTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 2:28:37 pm (UTC)'!
+!LWTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:24:44'!
 test03AddressConventionIsStable
 
 	| program runner1 runner2 result1 result2 distribution |
-	distribution := NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	distribution := NormalDistribution withMean: 0 standardDeviation: 1.
 	program := Let binds: {#x . (Sample withDistribution: distribution)}
 	withIndex: 1
 	andBody: {(Observe withDistribution: distribution withObservedValue: 0.5)}
 	andEnvironment: Dictionary new 
-	andAddress: #().
+	andAddress: AddressFactory root.
 
 	runner1 := LWRunner new.
-	result1 := runner1 runWithProgram: program withRng: (Random seed: 666).
+	result1 := runner1 runWithProgram: program randomGenerator: (Random seed: 666).
 	
 	runner2 := LWRunner new.
-	result2 := runner2 runWithProgram: program withRng: (Random seed: 666).
+	result2 := runner2 runWithProgram: program randomGenerator: (Random seed: 666).
 	
 	self assert: result1 value equals: result2 value.
 	self assert: result1 logWeights equals: result2 logWeights.! !
@@ -2145,13 +2308,13 @@ test10EvalHOF
 
 	self assert: (self evalAST: (Let initBinds: {#apply. function1} withBody: program)) equals: 42.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 7:38:51 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:38:18'!
 test11EvalSample
 
 	| ast result env distribution |
 	
 	"ast := #(sample #(normal 0 1))."
-	distribution := NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	distribution := NormalDistribution withMean: 0 standardDeviation: 1.
 	ast := Sample withDistribution: distribution.
 	
 	
@@ -2159,7 +2322,7 @@ test11EvalSample
 	env := {#normal -> #normal } asDictionary.
 	
 	machine := self dummyMachineWithControlStack: {
-		Eval expression: ast withEnvironment: env andAddress: #(#main)
+		Eval expression: ast withEnvironment: env andAddress: AddressFactory root
 	}.
 	
 	runner machine: machine. "PARCHE TEMPORAL, HAY QUE VERLO BIEN COMO MANEJARLO"
@@ -2167,23 +2330,21 @@ test11EvalSample
 	
 	self assert: result class equals: SSMHRun.
 	self assert: result trace sampleValues size equals: 1.
-	self assert: (result trace sampleValues includesKey: #(#main)).! !
+	self assert: (result trace sampleValues includesKey: AddressFactory root).! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'jcm 9/Jul/2026, 8:05:35 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:38:32'!
 test12EvalObserve
 	
-	| ast result env distribution |
+	| ast result distribution |
 	
 	"ast := #(observe #(normal 0 1) 5)."
-	distribution:= NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	distribution:= NormalDistribution withMean: 0 standardDeviation: 1.
 	ast := Observe withDistribution: distribution withObservedValue: 5.
-	
-	env := {#normal -> #normal } asDictionary.
-	
+		
 	machine := self dummyMachineWithControlStack: {Eval 
 		expression: ast 
-		withEnvironment: env
-		andAddress: #(#main)
+		withEnvironment: {#normal -> #normal} asDictionary
+		andAddress: AddressFactory root
 	}.
 	
 	runner machine: machine. "PARCHE TEMPORAL, HAY QUE VERLO BIEN COMO MANEJARLO"
@@ -2193,23 +2354,23 @@ test12EvalObserve
 	self assert: result trace observeDensities size equals: 1.
 	self assert: (result trace observeDensities values first) notNil.! !
 
-!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 6/Jul/2026, 11:45:53 pm (UTC)'!
+!MachineTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:47:53'!
 test13EvalDone
 
 	| result |
 	machine := Machine new 
-		initMachineWithControlStack: #()
-		withValueStack: (OrderedCollection with: 99)
-		withEnvVar: Dictionary new
-		withRng: nil
-		withLogW: 0.
+		initializeControlStack: #()
+		valueStack: (OrderedCollection with: 99)
+		environment: Dictionary new
+		randomGenerator: nil
+		logWeight: 0.
 		
 	result := machine resumeRunner: runner.
 	
 	self assert: result class equals: SSMHRun.
 	self assert: result value equals: 99.! !
 
-!SMCTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 4:05:04 pm (UTC)'!
+!SMCTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:04:55'!
 test01DonePreservesParticleOrder
 
     | p1 p2 p3 result |
@@ -2225,9 +2386,9 @@ test01DonePreservesParticleOrder
     result := runner runWithProgram: nil withRng: Random new withParticles: {p1. p2. p3}.
 
     self assert: result class equals: SMCRun.
-    self assert: result values asArray equals: {1.0. 2.5. -3.0}.! !
+    self assert: result value asArray equals: {1.0. 2.5. -3.0}.! !
 
-!SMCTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 4:31:16 pm (UTC)'!
+!SMCTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 08:27:31'!
 test02RejectsBrokenObserve
 
 	| p1 p2 |
@@ -2238,7 +2399,7 @@ test02RejectsBrokenObserve
 
 	"intercepta Observe"
 	p2 := self dummyMachineWithControlStack: {Observe withAddress: #(#sigma)}.
-	p2 pushValue: (NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: nil).
+	p2 pushValue: (NormalDistribution withMean: 0 standardDeviation: 1).
 	p2 pushValue: 0.
 
 	runner := SMCRunner new.
@@ -2247,7 +2408,7 @@ test02RejectsBrokenObserve
         	raise: Error
         	withExceptionDo: [ :exception | self assert: exception messageText equals: 'algorithm needs all particles to reach observe together'].! !
 
-!SMCTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 4:32:07 pm (UTC)'!
+!SMCTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 08:29:03'!
 test03ObserveUpdateWeight
 
     | particle distribution program |
@@ -2257,15 +2418,15 @@ test03ObserveUpdateWeight
     runner := SMCRunner new.
     runner machine: particle.
 
-    distribution := NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+    distribution := NormalDistribution withMean: 0 standardDeviation: 1.
     program := runner observeWithAddress: #sigma withDistribution: distribution withObservedValue: 0.
 
     self assert: program isObserve.
     self assert: program particle equals: particle.
     self assert: particle popValue equals: 0.
-    self assert: particle logWeights equals: (distribution logarithmicProbabilityWith: 0).! !
+    self assert: particle logWeights equals: (distribution logarithmicProbabilityFor: 0).! !
 
-!SMCTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 5:29:27 pm (UTC)'!
+!SMCTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 08:27:44'!
 test04SampleReturnsSampledValue
 
     | particle distribution sampled |
@@ -2274,7 +2435,7 @@ test04SampleReturnsSampledValue
     runner := SMCRunner new.
     runner machine: particle.
 
-    distribution := NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+    distribution := NormalDistribution withMean: 0 standardDeviation: 1.
     sampled := runner sampleWithAddress: #mu withDistribution: distribution.
 
     self assert: sampled isFloat.
@@ -2314,83 +2475,84 @@ test05ResamplingCopiesSelectedAncestors
 	 self assert: copiedParticle randomGenerator equals: rng.
         self assert: (#(10 11 12) includes: copiedParticle popValue)].! !
 
-!SSMHTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:29:23 am (UTC)'!
+!SSMHTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:38:51'!
 test01InitialTraceRegistersSamples
 
 	| ast distribution result |
-	distribution := NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	distribution := NormalDistribution withMean: 0 standardDeviation: 1.
 	ast := Sample withDistribution: distribution.
 	
-	machine := self dummyMachineWithControlStack: {Eval expression: ast withEnvironment: Dictionary new andAddress: #(#main)}.
+	machine := self dummyMachineWithControlStack: {Eval expression: ast withEnvironment: Dictionary new andAddress: AddressFactory root}.
 	runner machine: machine.
 	result := machine resumeRunner: runner.
 	
 	self assert: result class equals: SSMHRun.
-	self assert: (result trace sampleValues includesKey: #(#main)).
-	self assert: (result trace sampleDensities includesKey: #(#main)).! !
+	self assert: (result trace sampleValues includesKey: AddressFactory root).
+	self assert: (result trace sampleDensities includesKey: AddressFactory root).! !
 
-!SSMHTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 12:31:06 am (UTC)'!
+!SSMHTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 10:39:15'!
 test02InitialTraceRegistersObserves
 
 	| ast distribution result |
-	distribution := NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	distribution := NormalDistribution withMean: 0 standardDeviation: 1.
 	ast := Observe withDistribution: distribution withObservedValue: 5.
 	
-	machine := self dummyMachineWithControlStack: {Eval expression: ast withEnvironment: Dictionary new andAddress: #(#main)}.
+	machine := self dummyMachineWithControlStack: {Eval expression: ast withEnvironment: Dictionary new andAddress: AddressFactory root}.
 	runner machine: machine.
 	result := machine resumeRunner: runner.
 	
 	self assert: result class equals: SSMHRun.
-	self assert: (result trace observeDensities includesKey: #(#main)).! !
+	self assert: (result trace observeDensities includesKey: AddressFactory root).! !
 
-!SSMHTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 2:29:45 pm (UTC)'!
+!SSMHTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 11:11:01'!
 test03CacheReuseAtNonRedrawAddress
 
 	| ast cache result distribution |
 	
-	distribution := NormalDistribution withMean: 0 standardDeviation: 1 randomGenerator: Random new.
+	distribution := NormalDistribution withMean: 0 standardDeviation: 1.
 	ast := Sample withDistribution: distribution.
-	
-	cache := {#() -> 42} asDictionary.
+	cache := Dictionary new.
+	cache at: AddressFactory root put: 42.
 
 	runner := SSMHRunner new.
 
-	result := runner run: ast withRng: Random new redrawAddress: #(#another) withCache: cache.
+	result := runner run: ast withRandomGenerator: Random new redrawAddress: #(#another) asAddress cache: cache.
 
-	self assert: (result trace sampleValues at: #()) equals: 42.! !
+	self assert: (result trace sampleValues at: AddressFactory root) equals: 42.! !
 
-!SSMHTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 1:12:37 am (UTC)'!
+!SSMHTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 11:12:11'!
 test04RedrawSiteForcesNewSample
 	
 	| ast cache distribution dummyRandom result |
 	dummyRandom := ReadStream on: #(0.5 0.5).
 	
-	distribution := NormalDistribution withMean: 0.0 standardDeviation: 1.0 randomGenerator: dummyRandom.
+	distribution := NormalDistribution withMean: 0 standardDeviation: 1.
 	ast := Sample withDistribution: distribution.
 	
-	cache := {#main -> 42} asDictionary.
+	cache := Dictionary new.
+	cache at: AddressFactory root put: 42.
 	
 	runner := SSMHRunner new.
-	result := runner run: ast withRng: dummyRandom redrawAddress: #() withCache: cache. "forzamos una muestra nueva"
+	result := runner run: ast withRandomGenerator: dummyRandom redrawAddress: AddressFactory root cache: cache. "forzamos una muestra nueva"
 	
-	self assert: (result trace sampleValues at: #()) ~= 42.! !
+	self assert: (result trace sampleValues at: AddressFactory root) ~= 42.! !
 
-!SSMHTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 1:13:20 am (UTC)'!
+!SSMHTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 11:11:21'!
 test05AbsentAddressInCacheForcesNewSample
 	
 	| ast cache distribution dummyRandom result |
 	dummyRandom := ReadStream on: #(0.5 0.5).
 	
-	distribution := NormalDistribution withMean: 0.0 standardDeviation: 1.0 randomGenerator: dummyRandom.
+	distribution := NormalDistribution withMean: 0 standardDeviation: 1.
 	ast := Sample withDistribution: distribution.
 	
 	cache := Dictionary new. "cache nula"
 	
 	runner := SSMHRunner new.
-	result := runner run: ast withRng: dummyRandom redrawAddress: #(#another) withCache: cache.
+	result := runner run: ast withRandomGenerator: dummyRandom redrawAddress: #(#another) asAddress cache: cache.
 	
-	self assert: (result trace sampleValues includesKey: #()).
-	self assert: (result trace sampleValues at: #()) notNil.! !
+	self assert: (result trace sampleValues includesKey: AddressFactory root).
+	self assert: (result trace sampleValues at: AddressFactory root) notNil.! !
 
 !SSMHTest methodsFor: 'as yet unclassified' stamp: 'jcm 10/Jul/2026, 2:30:19 pm (UTC)'!
 test06RandomSampleAddressWithEmptyTrace
@@ -2424,12 +2586,12 @@ genProgram
 	
 	 ^letInstance.! !
 
-!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 9:16:36 am (UTC)'!
+!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 11:15:43'!
 testConjLW
 
 	| results posteriori foldWeight weight |
 	
-	results := LikelihoodWeighting program: self genProgram rng: Random new for: 2000.
+	results := LikelihoodWeighting program: self genProgram rng: Random new for: 200.
 
 	foldWeight := 0.
 		
@@ -2443,40 +2605,45 @@ testConjLW
 	
 	self assert: (posteriori between: 0.9 and: 1.4).! !
 
-!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 15:56:08'!
+!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 11:15:39'!
 testConjSMC
-	| posteriori particles |
+	| posteriori particles rng magicNumber |
+	
+	rng := Random seed: 666.
+	
+	"numero mágico para separar las seeds, random next devuelve entre 0 y 1"
+	magicNumber := 222222222.
 	
 	particles := SequentialMonteCarlo 
 		program: self genProgram 
-		rng: ((1 to: 5000) collect: [ :each | Random new ])
-		for: 5000.
+		rng: ((1 to: 200) collect: [ :each | Random seed: (rng next * magicNumber) asInteger])
+		for: 200.
 	
-	posteriori := particles values sum / particles values size.
+	posteriori := particles value sum / particles value size.
 	
 	self assert: (posteriori between: 0.9 and: 1.4).! !
 
-!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026, 10:34:14 am (UTC)'!
+!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 11:15:33'!
 testConjSSMH
 	| chain posteriori |
 	
 	chain := SingleSiteMetropolisHastings 
 		program: self genProgram
 		rng: Random new 
-		steps: 1000
+		steps: 500
 		warmup: 200.
 
-	posteriori := chain sum / chain size.
+	posteriori := (chain collect: [:i | i value]) sum / chain size.
 	
 	self assert: (posteriori between: 0.9 and: 1.4).! !
 
-!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:42:38'!
+!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 11:16:48'!
 testGeometric
 
 	| geomFn program posteriori results rng bernoulli |
 	
 	rng := Random seed: 1.
-	bernoulli := BernoulliDistribution withProbability: 0.3 randomGenerator: rng.
+	bernoulli := BernoulliDistribution withProbability: 0.3.
 		
 	geomFn := Fn withParameters: #(#geom) andBody: {
 		If condition: (Sample withDistribution: bernoulli)
@@ -2487,13 +2654,13 @@ testGeometric
 		initBinds: {#geom . geomFn} 
 		withBody: {CallFunction withFunction: #geom withArguments: #(#geom)}.
 		
-	results := LikelihoodWeighting program: program rng: rng for: 200000.
+	results := LikelihoodWeighting program: program rng: rng for: 500.
 	
 	posteriori := results value sum / results value size.
 	
-	self assert: (posteriori between: 2.25 and: 2.4).! !
+	self assert: (posteriori between: 2.1 and: 2.5).! !
 
-!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/10/2026 16:14:50'!
+!MainTest methodsFor: 'as yet unclassified' stamp: 'L.C 7/11/2026 09:04:53'!
 testShift
 
 	| program results |
@@ -2519,6 +2686,11 @@ evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: anAddress
 ifRunnerSignal: aBlock
 
 	^self! !
+
+!SequenceableCollection methodsFor: '*SmalltalkPPL-Evaluation' stamp: 'L.C 7/11/2026 10:48:12'!
+asAddress
+
+	^AddressFactory withPath: self asArray! !
 
 !OrderedCollection methodsFor: '*SmalltalkPPL-SoftMax' stamp: 'jcm 10/Jul/2026, 2:53:45 pm (UTC)'!
 softMax
