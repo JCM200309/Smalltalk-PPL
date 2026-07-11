@@ -33,6 +33,38 @@ test02Sample
 	self assert: sample class equals: SmallFloat64.! !
 
 
+!classDefinition: #ExactEnumerationTest category: #'SmalltalkPPL-Tests'!
+TestCase subclass: #ExactEnumerationTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SmalltalkPPL-Tests'!
+
+!ExactEnumerationTest methodsFor: 'as yet unclassified' stamp: 'JCM 11/Jul/2026 19:00:39'!
+test1SanityCheckOneBernoulli
+
+	| one_coin runs epsilon logZ posteriorTableResult rows totalProbability |
+	
+	one_coin := Sample withDistribution: (BernoulliDistribution withProbability: 0.3).
+	runs := TraceEnumerator enumerateTracesOf: one_coin forStates: 10000000.
+	posteriorTableResult := TraceEnumerator new posteriorTableFrom: runs key: [ :value | value ].
+	rows := posteriorTableResult first.
+	logZ := posteriorTableResult second.
+
+	epsilon := 0.000001.
+
+	self assert: runs size equals: 2.
+
+	totalProbability := rows
+		inject: 0
+		into: [ :sum :row | sum + row third ].
+
+	self assert: (totalProbability - 1.0) abs < epsilon.
+	self assert: logZ abs < epsilon.
+	
+	! !
+
+
 !classDefinition: #InterpreterTest category: #'SmalltalkPPL-Tests'!
 TestCase subclass: #InterpreterTest
 	instanceVariableNames: 'runner machine'
@@ -1135,14 +1167,15 @@ evalWithMachine: aMachine withEnvironment: anEnvironment andAddress: aRawAddress
 			andAddress: (aRawAddress asAddress/#d)).
 	^ self! !
 
-!Sample methodsFor: 'as yet unclassified' stamp: 'L.C 10/Jul/2026 10:03:58'!
+!Sample methodsFor: 'as yet unclassified' stamp: 'JCM 11/Jul/2026 19:29:35'!
 executeOn: aMachine runner: aRunner
 
 	| sampled |
 	distribution := aMachine popValue.
 	sampled := aRunner sampleWithAddress: address withDistribution: distribution.
 	
-	aMachine pushValue: sampled.
+	"Fix para el caso de Trace Enumerator Runner"
+	sampled notNil ifTrue:[aMachine pushValue: sampled].
 	
 	^sampled.! !
 
@@ -1206,6 +1239,25 @@ Distribution subclass: #BernoulliDistribution
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'SmalltalkPPL-MiniPPL'!
+
+!BernoulliDistribution methodsFor: 'sampling' stamp: 'JCM 11/Jul/2026 18:30:57'!
+finiteSupport
+
+	| support |
+
+	support := OrderedCollection new.
+
+	probability < 1 ifTrue: [
+		support add: (false -> (1 - probability) ln)
+	].
+
+	probability > 0 ifTrue: [
+		support add: (true -> probability ln)
+	].
+
+	^ support
+
+	! !
 
 !BernoulliDistribution methodsFor: 'sampling' stamp: 'L.C 11/Jul/2026 08:09:19'!
 sample
@@ -1702,6 +1754,131 @@ program: aProgram rng: aRandomGenerator steps: aNumberOfSteps warmup: aNumberOfW
 	
 	^self new initializeProgram: aProgram rng: aRandomGenerator steps: aNumberOfSteps warmup: aNumberOfWarmups.
 ! !
+
+
+!classDefinition: #TraceEnumerator category: #'SmalltalkPPL-Algorithm'!
+Object subclass: #TraceEnumerator
+	instanceVariableNames: 'stack finished maxStates'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SmalltalkPPL-Algorithm'!
+
+!TraceEnumerator methodsFor: 'Instance Creation' stamp: 'JCM 11/Jul/2026 17:46:37'!
+checkBudget: aCounter DoesNotExceeded: aMaxNumberOfSteps
+
+	aCounter > aMaxNumberOfSteps ifTrue:[Error signal: 'state budget exceeded']! !
+
+!TraceEnumerator methodsFor: 'Instance Creation' stamp: 'JCM 11/Jul/2026 19:37:18'!
+enumerateTracesOf: aProgram forStates: aNumberOfStates
+	
+	| machine run visited |
+	stack := self initializeStackWith: aProgram.
+	finished := OrderedCollection new.
+	visited := 0.
+	maxStates := aNumberOfStates.
+	
+	[stack notEmpty] whileTrue:[
+		visited := visited + 1.
+		self checkBudget: visited DoesNotExceeded: aNumberOfStates.
+		machine := stack removeLast.
+		run := TraceEnumeratorRunner runWithMachine: machine withStack: stack.
+		"Actualizo el stack"
+		stack := run updatedStack.
+		finished add: run.
+		].
+
+	^finished! !
+
+!TraceEnumerator methodsFor: 'Instance Creation' stamp: 'JCM 11/Jul/2026 19:02:37'!
+initializeStackWith: aProgram
+
+	^ OrderedCollection with: (Machine initialMachineWithProgram: aProgram randomGenerator: Random new)! !
+
+
+!TraceEnumerator methodsFor: 'PosteriorTable Methods' stamp: 'JCM 11/Jul/2026 18:48:32'!
+logAddExp: aLogNumber with: anotherLogNumber
+
+	| max |
+
+	max := aLogNumber max: anotherLogNumber.
+
+	^ max + (((aLogNumber - max) exp + (anotherLogNumber - max) exp) ln)! !
+
+!TraceEnumerator methodsFor: 'PosteriorTable Methods' stamp: 'JCM 11/Jul/2026 18:48:41'!
+logSumExp: logNumbers
+
+	| max sumExp |
+
+	logNumbers isEmpty ifTrue: [
+		self error: 'Cannot compute logSumExp of empty collection'
+	].
+
+	max := logNumbers first.
+
+	logNumbers do: [ :each |
+		max := max max: each
+	].
+
+	sumExp := 0.
+
+	logNumbers do: [ :each |
+		sumExp := sumExp + (each - max) exp
+	].
+
+	^ max + sumExp ln! !
+
+!TraceEnumerator methodsFor: 'PosteriorTable Methods' stamp: 'JCM 11/Jul/2026 19:38:32'!
+posteriorTableFrom: runs key: aKeyBlock
+
+	| logMass keys z rows |
+
+	logMass := Dictionary new.
+
+	runs do: [ :run | | value logWeight key previousLogMass |
+		 value := run value.
+		logWeight := run logW.
+		key := aKeyBlock value: value.
+
+		(logMass includesKey: key)
+			ifTrue: [
+				previousLogMass := logMass at: key.
+				logMass
+					at: key
+					put: (self logAddExp: previousLogMass with: logWeight)
+			]
+			ifFalse: [
+				logMass at: key put: logWeight
+			].
+	].
+
+	keys := logMass keys asSortedCollection.
+	z := self logSumExp: (keys collect: [ :key | logMass at: key ]).
+
+	rows := OrderedCollection new.
+
+	keys do: [ :key | | mass probability |
+		mass := logMass at: key.
+		probability := (mass - z) exp.
+
+		rows add: { key. mass. probability }.
+	].
+
+	^ { rows. z }! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TraceEnumerator class' category: #'SmalltalkPPL-Algorithm'!
+TraceEnumerator class
+	instanceVariableNames: ''!
+
+!TraceEnumerator class methodsFor: 'as yet unclassified' stamp: 'JCM 11/Jul/2026 12:18:10'!
+enumerateTracesOf: aProgram forStates: aNumberOfStates
+
+	^self new enumerateTracesOf: aProgram forStates: aNumberOfStates
+
+	
+
+	! !
 !classDefinition: #AddressFactory category: #'SmalltalkPPL-Core'!
 Object subclass: #AddressFactory
 	instanceVariableNames: 'path'
@@ -2012,10 +2189,17 @@ doneWithValue: aReturnValue
 
 	self subclassResponsibility! !
 
-!AlgorithmRunner methodsFor: 'Special Instructions' stamp: 'jcm 10/Jul/2026 17:32:36'!
+!AlgorithmRunner methodsFor: 'Special Instructions' stamp: 'JCM 11/Jul/2026 17:58:33'!
 observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
-
-	self subclassResponsibility! !
+	
+	| logIncrement |
+	logIncrement := aDistribution logarithmicProbabilityFor: anObservedValue.
+	
+	machine incrementLogW: (aDistribution logarithmicProbabilityFor: anObservedValue).
+	machine pushValue: anObservedValue.
+	
+	^self returnWithAddress: anAddress withLogIncrement: logIncrement withObservedValue: anObservedValue.
+! !
 
 !AlgorithmRunner methodsFor: 'Special Instructions' stamp: 'jcm 10/Jul/2026 17:33:20'!
 sampleWithAddress: anAddress withDistribution: aDistribution
@@ -2035,18 +2219,6 @@ AlgorithmRunner subclass: #ImportanceSamplingRunner
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'SmalltalkPPL-Runner'!
-
-!ImportanceSamplingRunner methodsFor: 'Special Instructions' stamp: 'L.C 11/Jul/2026 08:19:07'!
-observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
-	
-	| logIncrement |
-	logIncrement := aDistribution logarithmicProbabilityFor: anObservedValue.
-	
-	machine incrementLogW: (aDistribution logarithmicProbabilityFor: anObservedValue).
-	machine pushValue: anObservedValue.
-	
-	^self returnWithAddress: anAddress withLogIncrement: logIncrement withObservedValue: anObservedValue.
-! !
 
 !ImportanceSamplingRunner methodsFor: 'Special Instructions' stamp: 'L.C 11/Jul/2026 08:21:23'!
 sampleWithAddress: anAddress withDistribution: aDistribution
@@ -2073,11 +2245,8 @@ runWithProgram: aProgram randomGenerator: aRandomNumberGenerator
 	! !
 
 
-!LWRunner methodsFor: 'Special Instructions' stamp: 'L.C 11/Jul/2026 09:57:08'!
+!LWRunner methodsFor: 'Special Instructions' stamp: 'JCM 11/Jul/2026 18:20:50'!
 doneWithValue: aReturnValue
-
-"Cambiar nombre aReturnValue viene de V[-1] "
-
 	
 	^LWRun withLogWeight: machine logWeights value: aReturnValue.! !
 
@@ -2279,11 +2448,8 @@ AlgorithmRunner subclass: #SSMHRunner
 	poolDictionaries: ''
 	category: 'SmalltalkPPL-Runner'!
 
-!SSMHRunner methodsFor: 'Special Instructions' stamp: 'L.C 11/Jul/2026 09:58:48'!
+!SSMHRunner methodsFor: 'Special Instructions' stamp: 'JCM 11/Jul/2026 18:21:07'!
 doneWithValue: aReturnValue
-
-"Cambiar nombre aReturnValue viene de V[-1] "
-
 	
 	^SSMHRun withTrace: trace value: aReturnValue.
 
@@ -2387,6 +2553,72 @@ run: aProgram withRandomGenerator: aRandomNumberGenerator redrawAddress: anAddre
 	^result.
 	
 ! !
+
+
+!classDefinition: #TraceEnumeratorRunner category: #'SmalltalkPPL-Runner'!
+AlgorithmRunner subclass: #TraceEnumeratorRunner
+	instanceVariableNames: 'stack'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SmalltalkPPL-Runner'!
+
+!TraceEnumeratorRunner methodsFor: 'Special Instructions' stamp: 'JCM 11/Jul/2026 19:37:14'!
+doneWithValue: aReturnValue
+	^TraceEnumeratorRun withValue: aReturnValue withlogW: machine logWeights withNewStack: stack
+	
+	! !
+
+!TraceEnumeratorRunner methodsFor: 'Special Instructions' stamp: 'JCM 11/Jul/2026 18:02:23'!
+observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue
+
+	"Es igual que el observe de Algorithm Runner solo que pushea la machine al stack"
+	
+	stack add: machine.
+	
+	^super observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue! !
+
+!TraceEnumeratorRunner methodsFor: 'Special Instructions' stamp: 'JCM 11/Jul/2026 19:35:02'!
+sampleWithAddress: anAddress withDistribution: aDistribution
+
+	| finiteSupport x|
+	
+	finiteSupport := aDistribution finiteSupport.
+	
+	finiteSupport do: [:pair | | lp child |
+		x := pair key.
+    		lp := pair value.
+    		child := machine forkWithRng: nil.
+   		child incrementLogW: (child logWeights + lp).
+    		child pushValue: x.
+    		stack add: child.
+		].
+	
+	^x
+	
+	
+	
+	
+	! !
+
+
+!TraceEnumeratorRunner methodsFor: 'Instance Creation' stamp: 'JCM 11/Jul/2026 18:01:26'!
+runWithMachine: aMachine withStack: aStack
+
+	machine := aMachine.
+	stack := aStack.
+	
+	^self run! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TraceEnumeratorRunner class' category: #'SmalltalkPPL-Runner'!
+TraceEnumeratorRunner class
+	instanceVariableNames: ''!
+
+!TraceEnumeratorRunner class methodsFor: 'instance creation' stamp: 'JCM 11/Jul/2026 18:01:06'!
+runWithMachine: aMachine withStack: aStack
+
+	^self new runWithMachine: aMachine withStack: aStack! !
 !classDefinition: #AlgorithmRuns category: #'SmalltalkPPL-ExecutionState'!
 Object subclass: #AlgorithmRuns
 	instanceVariableNames: 'values'
@@ -2490,6 +2722,51 @@ withTrace: aProposedTrace value: aReturnValue.
 	
 	
 	^self new initializeWithTrace: aProposedTrace withValue: aReturnValue ! !
+
+
+!classDefinition: #TraceEnumeratorRun category: #'SmalltalkPPL-ExecutionState'!
+AlgorithmRuns subclass: #TraceEnumeratorRun
+	instanceVariableNames: 'logW value updatedStack'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SmalltalkPPL-ExecutionState'!
+
+!TraceEnumeratorRun methodsFor: 'Instance Creation' stamp: 'JCM 11/Jul/2026 19:10:28'!
+withValue: aReturnValue withlogW: aValueForLogW withNewStack: aNewStack
+
+	value := aReturnValue.
+	logW := aValueForLogW.
+	updatedStack := aNewStack.
+	
+	^self ! !
+
+
+!TraceEnumeratorRun methodsFor: 'getters' stamp: 'JCM 11/Jul/2026 19:13:56'!
+logW
+	
+	^logW! !
+
+!TraceEnumeratorRun methodsFor: 'getters' stamp: 'JCM 11/Jul/2026 19:12:05'!
+updatedStack
+	
+	^updatedStack ! !
+
+!TraceEnumeratorRun methodsFor: 'getters' stamp: 'JCM 11/Jul/2026 19:14:08'!
+value
+	
+	^value! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TraceEnumeratorRun class' category: #'SmalltalkPPL-ExecutionState'!
+TraceEnumeratorRun class
+	instanceVariableNames: ''!
+
+!TraceEnumeratorRun class methodsFor: 'instance creation' stamp: 'JCM 11/Jul/2026 19:10:42'!
+withValue: aReturnValue withlogW: aValueForLogW withNewStack: aNewStack
+
+	^self new withValue: aReturnValue withlogW: aValueForLogW withNewStack: aNewStack
+! !
 !classDefinition: #MHTrace category: #'SmalltalkPPL-Kernel-SSMH'!
 Object subclass: #MHTrace
 	instanceVariableNames: 'sampleDensities sampleValues observeDensities randomGenerator'
@@ -2767,86 +3044,6 @@ Habria que implementar las excepciones con subclass de PPLError signal: 'blabla'
 
 !classDefinition: #NameOfSubclass category: #'SmalltalkPPL-ExactEnumeration'!
 Object subclass: #NameOfSubclass
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'SmalltalkPPL-ExactEnumeration'!
-
-
-!classDefinition: #TraceEnumerator category: #'SmalltalkPPL-ExactEnumeration'!
-Object subclass: #TraceEnumerator
-	instanceVariableNames: 'stack finished visited maxStates'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'SmalltalkPPL-ExactEnumeration'!
-
-!TraceEnumerator methodsFor: 'Special Instructions' stamp: 'JCM 11/Jul/2026 12:42:40'!
-observeWithAddress: anAddress withDistribution: aDistribution withObservedValue: anObservedValue! !
-
-
-!TraceEnumerator methodsFor: 'Instance Creation' stamp: 'JCM 11/Jul/2026 12:31:33'!
-checkBudgetNotExceeded
-
-	visited > maxStates ifTrue:[Error signal: 'state budget exceeded']! !
-
-!TraceEnumerator methodsFor: 'Instance Creation' stamp: 'JCM 11/Jul/2026 12:45:43'!
-enumerateTracesOf: aProgram forStates: aNumberOfStates
-	
-	| machine runner |
-	stack := self initializeStackWith: aProgram.
-	finished := Array new.
-	visited := 0.
-	maxStates := aNumberOfStates.
-	
-	[stack notEmpty] whileTrue:[
-		visited := visited + 1.
-		self checkBudgetNotExceeded.
-		machine := stack pop.
-		runner := TraceEnumeratorRunner withMachine: machine.
-		machine resumeRunner: self.
-		].
-	
-	^finished
-	
-	^self runEnumerator! !
-
-!TraceEnumerator methodsFor: 'Instance Creation' stamp: 'JCM 11/Jul/2026 12:22:18'!
-initializeStackWith: aProgram
-
-	^ Machine initialMachineWithProgram: aProgram randomGenerator: Random new! !
-
-!TraceEnumerator methodsFor: 'Instance Creation' stamp: 'JCM 11/Jul/2026 12:30:52'!
-runEnumerator
-
-	| machine |
-	
-	[stack notEmpty] whileTrue:[
-		visited := visited + 1.
-		self checkBudgetNotExceeded.
-		machine := stack pop.
-		machine resumeRunner: self.
-		].
-	
-	^finished! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'TraceEnumerator class' category: #'SmalltalkPPL-ExactEnumeration'!
-TraceEnumerator class
-	instanceVariableNames: ''!
-
-!TraceEnumerator class methodsFor: 'as yet unclassified' stamp: 'JCM 11/Jul/2026 12:18:10'!
-enumerateTracesOf: aProgram forStates: aNumberOfStates
-
-	^self new enumerateTracesOf: aProgram forStates: aNumberOfStates
-
-	
-
-	! !
-
-
-!classDefinition: #TraceEnumeratorRunner category: #'SmalltalkPPL-ExactEnumeration'!
-Object subclass: #TraceEnumeratorRunner
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
