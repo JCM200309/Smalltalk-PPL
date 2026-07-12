@@ -1,6 +1,6 @@
 # Smalltalk-PPL
 
-`Smalltalk-PPL` es un paquete desarrollado en **Cuis Smalltalk** para implementar ideas de **Programación Probabilista** usando **Programación Orientada a Objetos**. El proyecto nace a partir de la materia *Introducción a la Programación Probabilista* y toma como referencia dos notebooks:
+`Smalltalk-PPL` es un paquete desarrollado en **Cuis Smalltalk** para implementar ideas de **Programación Probabilistica** usando **Programación Orientada a Objetos**. El proyecto nace a partir de la materia *Introducción a la Programación Probabilistica* y toma como referencia dos notebooks:
 
 - [Activity 5: Messaging](https://colab.research.google.com/github/jburroni/IntroPPLs26/blob/main/notebooks/Jun-26/activity-5-messaging-student.ipynb)
 - [Activity: Enumeration 8-bit](https://colab.research.google.com/github/jburroni/IntroPPLs26/blob/main/notebooks/Jun-26/activity-enumeration-8bit-executed.ipynb)
